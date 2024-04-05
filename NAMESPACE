@@ -1,0 +1,5 @@
+useDynLib(gaia, .registration=TRUE)
+exportPattern("^[[:alpha:]]+")
+
+importFrom(methods, as)
+importFrom(Matrix, Matrix)

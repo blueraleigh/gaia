@@ -1,0 +1,16 @@
+# uses Makevars file from Matrix package as template for compilation in
+# subdirectories
+
+MK_INCLUDE = $(R_HOME)/etc${R_ARCH}/Makeconf
+
+TSKIT_INCLUDE = -I./tskit -I./tskit/tskit -I ./tskit/subprojects/kastore
+TSKIT_LIB = ./tskit/libtskit.a
+
+PKG_CFLAGS = -O2 -std=c11 -Wall -pedantic -UNDEBUG
+PKG_CPPFLAGS = -DR_NO_REMAP $(TSKIT_INCLUDE)
+PKG_LIBS = $(TSKIT_LIB)
+
+$(SHLIB): libtskit.a
+
+libtskit.a:
+	@(cd tskit && $(MAKE) -f "$(MK_INCLUDE)" -f Makefile libtskit.a)
