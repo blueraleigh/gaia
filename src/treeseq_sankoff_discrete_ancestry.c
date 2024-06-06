@@ -170,7 +170,7 @@ SEXP C_treeseq_discrete_mpr_ancestry(
                 if (mflag == 0)
                 {
                     numer = ret + offset*k;
-                    state_id = path[t - 1];
+                    state_id = path[t];
                     state_set_id = state_set[state_id];
                     sample_id = left_sample[v];
                     while (sample_id != TSK_NULL)
