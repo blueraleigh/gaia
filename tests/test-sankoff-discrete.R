@@ -94,7 +94,7 @@ mpr = function(state, parent, time, postorder, num_nodes, cost) {
 #  6          1.00       -
 #
 
-ts = treeseq_load("./test.trees")
+ts = treeseq_load("tests/test.trees")
 
 cost = matrix(0, 3, 3)
 cost[1,2] = cost[2,1] = cost[2,3] = cost[3,2] = 1

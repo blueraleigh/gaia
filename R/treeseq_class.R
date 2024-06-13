@@ -3,8 +3,9 @@
 #' @slot treeseq The tree sequence object.
 #' @slot tree A single marginal tree in the tree sequence.
 treeseq = setClass(
-    "treeseq"
-    , slots=list(
-          treeseq="externalptr"
-        , tree="externalptr")
+  "treeseq",
+  slots=list(
+    treeseq="externalptr",
+    tree="externalptr"
+  )
 )
