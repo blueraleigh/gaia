@@ -35,9 +35,9 @@ C_treeseq_load(SEXP filename)
     check_tsk_error(rc);
     rc = tsk_tree_init(tree, ts, TSK_SAMPLE_LISTS);
     check_tsk_error(rc);
-    SEXP exptr1 = PROTECT(R_MakeExternalPtr(ts, NULL, NULL));
+    SEXP exptr1 = PROTECT(R_MakeExternalPtr(ts, R_NilValue, R_NilValue));
     R_RegisterCFinalizer(exptr1, tsx_treeseq_exptr_free);
-    SEXP exptr2 = PROTECT(R_MakeExternalPtr(tree, NULL, NULL));
+    SEXP exptr2 = PROTECT(R_MakeExternalPtr(tree, R_NilValue, R_NilValue));
     R_RegisterCFinalizer(exptr2, tsx_tree_exptr_free);
     UNPROTECT(2);
     return Rf_list2(exptr1, exptr2);
