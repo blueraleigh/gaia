@@ -1,6 +1,6 @@
 .DS_Store
 *.tar.gz
-.Rproj.user
-.Rhistory
-.Rbuildignore
-.Rproj
+*.Rproj.user
+*.Rhistory
+*.Rbuildignore
+*.Rproj
