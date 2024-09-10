@@ -55,9 +55,20 @@ typedef struct mpr_summary {
 static void
 calc_stem_cost(tsk_id_t u, tsk_id_t v, tsx_tree_t *tree)
 {
-    assert(u != TSK_NULL);
-    assert(v != TSK_NULL);
-    mpr_t *mpr = (mpr_t *)(tree->mpr);
+    // Implements S4 & S5 of Algorithm P
+    // Assumes j != |E| from S2.
+    // S4: Remove edge. 
+    //    Set u <- E[O_k].parent, v <- E[O_k].child, w <- pi_u, and k <- k + 1. 
+    //    Then, if w != -1, set g_w(x) <- g_w(x) - h_u(x). Finally, set g_u(x) <- g_u(x) - h_v(x),
+    //    pi_v <- -1, v <- u, and u <- w.
+    // S5: Update node and stem costs.
+    //    While u != -1, set w <- pi_u and if w != -1 set g_w(x) <- g_w(x) - h_u(x). Then set
+    //    h_v(x) <- min_x[delta_v(x,z) + g_v(z)], g_u(x) <- g_u(x) + h_v(x), v <- u, and u <- w.
+    //    Go to S3.
+
+    assert(u != TSK_NULL); // u isn't null
+    assert(v != TSK_NULL); // v isn't null
+    mpr_t *mpr = (mpr_t *)(tree->mpr);  
     int i;
     int num_dims = mpr->num_dims;
     int num_dims1 = num_dims + 1;
