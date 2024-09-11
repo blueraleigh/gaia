@@ -1,5 +1,5 @@
-// This file compares the output of gaia to a more basic implementation
-// programmed directly in R.
+# This file compares the output of gaia to a more basic implementation
+# programmed directly in R.
 
 library(gaia)
 
