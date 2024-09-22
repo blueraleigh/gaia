@@ -1,5 +1,6 @@
 #include <R.h>
 #include <Rmath.h>
+#include <assert.h>
 
 #include "graph.h"
 #include "fequals.h"
@@ -13,7 +14,7 @@ prev_state(graph_t *g, int current, int source)
 {
     int i;
     int k;
-    int s;
+    int s = -1;
     double d;
     double D;
     
@@ -37,6 +38,7 @@ prev_state(graph_t *g, int current, int source)
         // shortest graph distance from source state to
         // current state that goes through this neighbor
         d = distances[source + neighbors[i]*num_states] + weights[i];
+        
         if (fequals(d, D))
         {
             ++k;
@@ -46,6 +48,7 @@ prev_state(graph_t *g, int current, int source)
             }
         }
     }
+    assert (s >= 0);
     return s;
 }
 
