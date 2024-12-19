@@ -55,26 +55,26 @@
 #' arbitrary space. \emph{Mathematical Programming}, 9:240-246.
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Define sample locations (3 samples in 2 states)
-#' samples <- data.frame(
-#'   node_id = 0:2,        # Node IDs use 0-based indexing
-#'   state_id = c(1,2,1)   # States use 1-based indexing
-#' )
-#'
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Define sample locations - nodes 0 and 2 in one state, node 1 in another
+#' state = c(2L,1L,1L)
+#' samples = cbind(node_id=0:2, state_id=state)
+#' 
 #' # Create cost matrix for 2 states
+#' # Migration between states has cost 1
 #' costs <- matrix(c(
-#'   0, 1,  # Cost of 1 to move between states
+#'   0, 1,  
 #'   1, 0
 #' ), 2, 2)
-#'
+#' 
 #' # Compute migration costs
+#' # Will calculate costs at nodes 3-6 based on samples 0-2
 #' mpr_costs <- treeseq_discrete_mpr(ts, samples, costs)
-#'
-#' # Find optimal states using the costs
-#' states <- treeseq_discrete_mpr_minimize(mpr_costs)
+#' 
+#' # Can also use branch lengths to scale costs
+#' mpr_costs_bl <- treeseq_discrete_mpr(ts, samples, costs, use_brlen=TRUE)
 #'
 #' @export
 treeseq_discrete_mpr = function(ts, sample_locations, cost_matrix, 
@@ -145,28 +145,19 @@ treeseq_discrete_mpr = function(ts, sample_locations, cost_matrix,
 #' \code{\link{treeseq_discrete_mpr_edge_history}} for detailed migration histories
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Define sample locations (3 samples in 2 states)
-#' samples <- data.frame(
-#'   node_id = 0:2,
-#'   state_id = c(1,2,1)
-#' )
-#'
-#' # Create cost matrix for 2 states
-#' costs <- matrix(c(
-#'   0, 1,
-#'   1, 0
-#' ), 2, 2)
-#'
-#' # Compute migration costs
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Set up discrete state reconstruction
+#' state = c(2L,1L,1L)
+#' samples = cbind(node_id=0:2, state_id=state)
+#' costs <- matrix(c(0,1,1,0), 2, 2)
 #' mpr_costs <- treeseq_discrete_mpr(ts, samples, costs)
-#'
-#' # Find optimal states (1-based indexing)
+#' 
+#' # Get optimal states for all nodes (0-6)
 #' states <- treeseq_discrete_mpr_minimize(mpr_costs)
-#'
-#' # Find optimal states (0-based indexing)
+#' 
+#' # Same with 0-based state indexing
 #' states0 <- treeseq_discrete_mpr_minimize(mpr_costs, index1=FALSE)
 #'
 #' @export
@@ -178,26 +169,81 @@ treeseq_discrete_mpr_minimize = function(obj, index1=TRUE)
 }
 
 
-#' Sample a migration history for each edge in a tree sequence
+#' Sample migration paths for each edge in a tree sequence
 #'
-#' @param ts An object of class \code{treeseq}.
-#' @param obj The result of \code{treeseq_discrete_mpr}.
-#' @param cost_matrix A numeric matrix giving the state-to-state migration
-#' costs. All costs should be non-negative and any non-zero costs on the 
-#' diagonal will be ignored.
-#' @param adjacency_matrix A binary matrix specifying geographic connections.
-#' Geographic states \code{i} and \code{j} are connected if the corresponding
-#' entry in \code{adjacency_matrix} is 1.
-#' @param index1 A logical indicating whether or not the returned state
-#' assignments should be indexed from 1 (TRUE) or 0 (FALSE).
-#' @details Samples a minimum cost migration history for each edge in a tree
-#' sequence and returns the history as a data.frame. Each history is a sequence 
-#' of visited geographic states ordered from most recent (present) to least 
-#' recent (past). The first element in the history is the state at the end
-#' of the edge and the last element in the history is the state at the
-#' beginning of the edge. Intermediate elements are the states visited along
-#' the way. If there are no intermediate elements, the edge remained in the
-#' same state for its entire duration.
+#' @description
+#' For each edge in a tree sequence, samples a minimum-cost migration path between 
+#' the geographic states of parent and child nodes. The path represents the sequence 
+#' of state transitions that could have occurred along the branch, consistent with 
+#' the parsimony reconstruction.
+#'
+#' @param ts A \code{treeseq} object
+#' @param obj Result object from \code{treeseq_discrete_mpr}
+#' @param cost_matrix A symmetric numeric matrix where entry [i,j] gives the migration
+#'   cost between states i and j. Must have non-negative values. Diagonal elements
+#'   are ignored.
+#' @param adjacency_matrix A binary matrix specifying allowed transitions between states.
+#'   Entry [i,j] should be 1 if direct transitions are allowed between states i and j,
+#'   0 otherwise. Must be symmetric.
+#' @param index1 Logical indicating whether state IDs should use 1-based indexing
+#'   (TRUE, default) or 0-based indexing (FALSE)
+#'
+#' @return A data frame where each row represents a state in a migration path:
+#'   \describe{
+#'     \item{edge_id}{ID of the edge this state belongs to}
+#'     \item{state_id}{Geographic state at this point in the path}
+#'     \item{time}{Time at which this state occurred}
+#'   }
+#' Also contains attributes:
+#'   \describe{
+#'     \item{node.state}{Vector of state assignments for all nodes}
+#'     \item{path.offset}{Index vector for finding states belonging to each edge}
+#'   }
+#'
+#' @details
+#' For each edge in the tree sequence, this function samples one possible migration
+#' path between the states assigned to the parent and child nodes by the parsimony
+#' reconstruction. The path represents a sequence of state transitions that could
+#' have occurred along that branch while achieving the minimum total migration cost.
+#'
+#' When multiple minimum-cost paths exist between two states, one is chosen randomly.
+#' The path always includes at least two points: the states at the beginning and end
+#' of the edge. Additional points are added when state transitions occur along the edge.
+#'
+#' The adjacency matrix controls which direct transitions between states are allowed.
+#' This can be used to enforce geographic constraints (e.g., requiring migration
+#' through intermediate states).
+#'
+#' @seealso
+#' \code{\link{treeseq_discrete_mpr}} for computing the parsimony reconstruction
+#' \code{\link{treeseq_discrete_mpr_minimize}} for assigning states to nodes
+#'
+#' @examples
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#'
+#' # Define sample states
+#' state = c(2L,1L,1L)
+#' samples = cbind(node_id=0:2, state_id=state)
+#'
+#' # Create cost matrix for 2 states
+#' costs <- matrix(c(
+#'   0, 1,  
+#'   1, 0
+#' ), 2, 2)
+#'
+#' # Create adjacency matrix allowing transitions between states
+#' adjacency <- matrix(1, 2, 2)
+#' diag(adjacency) <- 0  # No self-transitions needed in adjacency
+#'
+#' # Compute migration costs
+#' mpr_costs <- treeseq_discrete_mpr(ts, samples, costs)
+#'
+#' # Get migration histories for each edge
+#' # This will show state changes along branches in all three trees
+#' history <- treeseq_discrete_mpr_edge_history(ts, mpr_costs, costs, adjacency)
+#'
+#' @export
 treeseq_discrete_mpr_edge_history = function(ts, obj, cost_matrix,
     adjacency_matrix, index1=TRUE)
 {
@@ -244,25 +290,77 @@ treeseq_discrete_mpr_edge_history = function(ts, obj, cost_matrix,
 }
 
 
-#' Spatiotemporal ancestry coefficients
+#' Compute geographic ancestry coefficients through time
 #'
-#' @param ts An object of class \code{treeseq}.
-#' @param obj The result of \code{treeseq_discrete_mpr}.
-#' @param cost_matrix A numeric matrix giving the state-to-state migration
-#' costs. All costs should be non-negative and any non-zero costs on the 
-#' diagonal will be ignored.
-#' @param adjacency_matrix A binary matrix specifying geographic connections.
-#' Geographic states \code{i} and \code{j} are connected if the corresponding
-#' entry in \code{adjacency_matrix} is 1.
-#' @param times A set of times ordered from present to past at which to compute
-#' ancestry coefficients.
-#' @param state_sets An integer vector with one entry for each geographic
-#' state specifying the set to which that state belongs. Sets must be numbered
-#' beginning from 1.
-#' @param sample_sets An integer vector with one entry for each sample
-#' specifying the set to which that sample belongs. Sets must be numbered
-#' beginning from 1. A value of 0 may be used to indicate that the sample
-#' belongs to none of the sets and hence is to be excluded from the calculation.
+#' @description
+#' For each combination of sample subset and geographic region, calculates the 
+#' proportion of genetic material inherited from ancestors in that region at 
+#' different points in time. This allows tracking how the geographic distribution 
+#' of ancestry changes as we move backwards in time.
+#'
+#' @param ts A \code{treeseq} object
+#' @param obj Result object from \code{treeseq_discrete_mpr}
+#' @param cost_matrix Symmetric numeric matrix of migration costs between states
+#' @param adjacency_matrix Binary matrix specifying allowed transitions between states
+#' @param times Numeric vector of time points at which to calculate ancestry,
+#'   must be ordered from present (0) to past
+#' @param state_sets Integer vector grouping states into regions. Length must match
+#'   number of states, values indicate region membership (1-based)
+#' @param sample_sets Integer vector grouping samples into subsets. Length must match
+#'   number of samples, values indicate subset membership (1-based). Use 0 to exclude
+#'   samples.
+#'
+#' @return A 3-dimensional array with dimensions:
+#'   [region, sample_subset, time_point]
+#' Values represent the proportion of genetic material that sample_subset inherits
+#' from ancestors in region at each time_point.
+#'
+#' @details
+#' This function traces genetic material backwards in time to determine its
+#' geographic location at different time points. For each sample subset, time point,
+#' and geographic region, it calculates the fraction of the genome that was located
+#' in that region at that time.
+#'
+#' States can be grouped into regions using state_sets. For example, multiple
+#' states might represent different locations within the same continent. Similarly,
+#' samples can be grouped into subsets using sample_sets, allowing calculation
+#' of ancestry coefficients for different populations or sampling locations.
+#'
+#' The function uses the migration paths sampled by edge_history to determine
+#' locations of genetic material through time. Different random samplings of
+#' migration paths may give slightly different results when multiple equally
+#' parsimonious paths exist.
+#'
+#' @seealso
+#' \code{\link{treeseq_discrete_mpr_edge_history}} for the underlying migration paths
+#' \code{\link{treeseq_discrete_mpr_ancestry_flux}} for tracking migration between regions
+#'
+#' @examples
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#'
+#' # Set up states, costs, and adjacency
+#' state = c(2L,1L,1L)
+#' samples = cbind(node_id=0:2, state_id=state)
+#' costs <- matrix(c(0,1,1,0), 2, 2)
+#' adjacency <- matrix(1, 2, 2)
+#' diag(adjacency) <- 0
+#'
+#' # Compute base MPR
+#' mpr_costs <- treeseq_discrete_mpr(ts, samples, costs)
+#'
+#' # Define timepoints to examine ancestry
+#' # Must cover node times from 0 to 1.0
+#' times <- seq(0, 1.0, by=0.2)
+#'
+#' # Compute ancestry coefficients
+#' ancestry <- treeseq_discrete_mpr_ancestry(
+#'   ts, mpr_costs, costs, adjacency, times, 
+#'   state_sets=1:2,     # Keep states separate
+#'   sample_sets=1:3     # Keep samples separate
+#' )
+#'
+#' @export
 treeseq_discrete_mpr_ancestry = function(ts, obj, cost_matrix,
     adjacency_matrix, times, state_sets, sample_sets)
 {
@@ -302,25 +400,79 @@ treeseq_discrete_mpr_ancestry = function(ts, obj, cost_matrix,
 }
 
 
-#' Spatiotemporal ancestry flux coefficients
+#' Compute migration flux between geographic regions through time
 #'
-#' @param ts An object of class \code{treeseq}.
-#' @param obj The result of \code{treeseq_discrete_mpr}.
-#' @param cost_matrix A numeric matrix giving the state-to-state migration
-#' costs. All costs should be non-negative and any non-zero costs on the 
-#' diagonal will be ignored.
-#' @param adjacency_matrix A binary matrix specifying geographic connections.
-#' Geographic states \code{i} and \code{j} are connected if the corresponding
-#' entry in \code{adjacency_matrix} is 1.
-#' @param times A set of times ordered from present to past giving the intervals
-#' used for calculating flux coefficients.
-#' @param state_sets An integer vector with one entry for each geographic
-#' state specifying the set to which that state belongs. Sets must be numbered
-#' beginning from 1.
-#' @param sample_sets An integer vector with one entry for each sample
-#' specifying the set to which that sample belongs. Sets must be numbered
-#' beginning from 1. A value of 0 may be used to indicate that the sample
-#' belongs to none of the sets and hence is to be excluded from the calculation.
+#' @description
+#' Tracks the movement of genetic material between geographic regions over time by
+#' computing the proportion of each sample subset's genome that migrated between
+#' each pair of regions during different time intervals.
+#'
+#' @param ts A \code{treeseq} object
+#' @param obj Result object from \code{treeseq_discrete_mpr}
+#' @param cost_matrix Symmetric numeric matrix of migration costs between states
+#' @param adjacency_matrix Binary matrix specifying allowed transitions between states
+#' @param times Numeric vector of time points defining intervals for flux calculation,
+#'   must be ordered from present (0) to past
+#' @param state_sets Integer vector grouping states into regions. Length must match
+#'   number of states, values indicate region membership (1-based)
+#' @param sample_sets Integer vector grouping samples into subsets. Length must match
+#'   number of samples, values indicate subset membership (1-based). Use 0 to exclude
+#'   samples.
+#'
+#' @return A 4-dimensional array with dimensions:
+#'   [source_region, dest_region, sample_subset, time_interval]
+#' Values represent the proportion of sample_subset's genome that moved from
+#' source_region to dest_region during each time_interval.
+#'
+#' @details
+#' This function extends ancestry coefficient calculations by explicitly tracking
+#' migrations between regions. For each time interval, it identifies genetic material
+#' that changed regions during that interval and records the source and destination
+#' regions.
+#'
+#' States can be grouped into regions using state_sets. For example, multiple
+#' states might represent different locations within the same continent. Similarly,
+#' samples can be grouped into subsets using sample_sets, allowing calculation
+#' of migration flux for different populations or sampling locations.
+#'
+#' The function uses the migration paths sampled by edge_history to determine
+#' when migrations occurred. Different random samplings of migration paths may
+#' give slightly different results when multiple equally parsimonious paths exist.
+#'
+#' Time intervals are defined by consecutive pairs of values in the times parameter.
+#' The flux value for an interval represents all migrations that occurred between
+#' the start and end of that interval.
+#'
+#' @seealso
+#' \code{\link{treeseq_discrete_mpr_edge_history}} for the underlying migration paths
+#' \code{\link{treeseq_discrete_mpr_ancestry}} for static ancestry proportions
+#'
+#' @examples
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#'
+#' # Set up states, costs, and adjacency 
+#' state = c(2L,1L,1L)
+#' samples = cbind(node_id=0:2, state_id=state)
+#' costs <- matrix(c(0,1,1,0), 2, 2)
+#' adjacency <- matrix(1, 2, 2)
+#' diag(adjacency) <- 0
+#'
+#' # Compute base MPR
+#' mpr_costs <- treeseq_discrete_mpr(ts, samples, costs)
+#'
+#' # Define timepoints for flux intervals
+#' # Times should span node times (0-1.0)
+#' times <- seq(0, 1.0, by=0.2)
+#'
+#' # Compute migration flux between states over time
+#' flux <- treeseq_discrete_mpr_ancestry_flux(
+#'   ts, mpr_costs, costs, adjacency, times,
+#'   state_sets=1:2,     # Keep states separate
+#'   sample_sets=1:3     # Keep samples separate
+#' )
+#'
+#' @export
 treeseq_discrete_mpr_ancestry_flux = function(ts, obj, cost_matrix,
     adjacency_matrix, times, state_sets, sample_sets)
 {
@@ -411,23 +563,23 @@ treeseq_discrete_mpr_ancestry_flux = function(ts, obj, cost_matrix,
 #' Maddison, W.P. (1991) Square-Change Parsimony Reconstructions of Ancestral
 #' States for Continuous-Valued Characters on a Phylogenetic Tree. 
 #' \emph{Systematic Zoology}, 40(3):304-314.
-#'
+#' 
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Define sample locations (3 samples in 2D space)
-#' samples <- data.frame(
-#'   node_id = 0:2,
-#'   x = c(0.5, 1.25, 2.0),
-#'   y = c(2.7, 0.41, 1.5)
-#' )
-#'
-#' # Compute squared distance costs
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Define the x and y coordinates (locations)
+#' x <- c(0, 2, 1)
+#' y <- c(0, 0, 1)
+#' 
+#' # Create the matrix using cbind() and ensuring integer type
+#' samples <- cbind(node_id = 0:2, x = as.integer(x), y = as.integer(y))
+#' 
+#' # Compute squared distance costs for nodes 0-6
 #' mpr_costs <- treeseq_quadratic_mpr(ts, samples)
-#'
-#' # Find optimal locations
-#' locations <- treeseq_quadratic_mpr_minimize(mpr_costs)
+#' 
+#' # Can use branch lengths to scale distances by time
+#' mpr_costs_bl <- treeseq_quadratic_mpr(ts, samples, use_brlen=TRUE)
 #'
 #' @export
 treeseq_quadratic_mpr = function(ts, sample_locations, use_brlen=FALSE)
@@ -487,21 +639,22 @@ treeseq_quadratic_mpr = function(ts, sample_locations, use_brlen=FALSE)
 #' \code{\link{treeseq_quadratic_mpr_minimize_discrete}} for discrete location assignments
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Define sample locations (3 samples in 2D space)
-#' samples <- data.frame(
-#'   node_id = 0:2,
-#'   x = c(0.5, 1.25, 2.0),
-#'   y = c(2.7, 0.41, 1.5)
-#' )
-#'
-#' # Compute squared distance costs
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Define the x and y coordinates (locations)
+#' x <- c(0, 2, 1)
+#' y <- c(0, 0, 1)
+#' 
+#' # Create the matrix using cbind() and ensuring integer type
+#' samples <- cbind(node_id = 0:2, x = as.integer(x), y = as.integer(y))
+#' 
 #' mpr_costs <- treeseq_quadratic_mpr(ts, samples)
-#'
-#' # Find optimal continuous locations
+#' 
+#' # Find optimal continuous locations for all nodes 0-6
 #' locations <- treeseq_quadratic_mpr_minimize(mpr_costs)
+#' # Results should place internal nodes 3-6 at weighted averages
+#' # of their descendants' positions
 #'
 #' @export
 treeseq_quadratic_mpr_minimize = function(obj)
@@ -542,27 +695,26 @@ treeseq_quadratic_mpr_minimize = function(obj)
 #' \code{\link{treeseq_quadratic_mpr_minimize}} for continuous location assignments
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Define sample locations (3 samples in 2D space)
-#' samples <- data.frame(
-#'   node_id = 0:2,
-#'   x = c(0.5, 1.25, 2.0),
-#'   y = c(2.7, 0.41, 1.5)
-#' )
-#'
-#' # Define possible ancestral locations
-#' sites <- matrix(c(
-#'   0.5, 2.7,  # Site 1
-#'   1.25, 0.41,  # Site 2
-#'   2.0, 1.5  # Site 3
-#' ), ncol=2, byrow=TRUE)
-#'
-#' # Compute squared distance costs
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Define the x and y coordinates (locations)
+#' x <- c(0, 2, 1)
+#' y <- c(0, 0, 1)
+#' 
+#' # Create the matrix using cbind() and ensuring integer type
+#' samples <- cbind(node_id = 0:2, x = as.integer(x), y = as.integer(y))
+#' 
 #' mpr_costs <- treeseq_quadratic_mpr(ts, samples)
-#'
-#' # Find optimal discrete locations
+#' 
+#' # Define possible locations matching sample coordinates
+#' sites <- matrix(c(
+#'   0, 0,    # Site 1: matches node 0
+#'   2, 0,    # Site 2: matches node 1
+#'   1, 1     # Site 3: matches node 2
+#' ), ncol=2, byrow=TRUE)
+#' 
+#' # Get optimal site assignment for all nodes 0-6
 #' location_indices <- treeseq_quadratic_mpr_minimize_discrete(mpr_costs, sites)
 #'
 #' @export
@@ -631,21 +783,21 @@ treeseq_quadratic_mpr_minimize_discrete = function(obj, sites)
 #' Computer Science, vol 5267. Springer, Berlin, Heidelberg.
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Define sample locations (3 samples in 2D space)
-#' samples <- data.frame(
-#'   node_id = 0:2,
-#'   x = c(0.5, 1.25, 2.0),
-#'   y = c(2.7, 0.41, 1.5)
-#' )
-#'
-#' # Compute absolute distance costs
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Define the x and y coordinates (locations)
+#' x <- c(0, 2, 1)
+#' y <- c(0, 0, 1)
+#' 
+#' # Create the matrix using cbind() and ensuring integer type
+#' samples <- cbind(node_id = 0:2, x = as.integer(x), y = as.integer(y))
+#' 
+#' # Compute absolute distance costs for nodes 0-6
 #' mpr_costs <- treeseq_linear_mpr(ts, samples)
-#'
-#' # Find optimal locations
-#' locations <- treeseq_linear_mpr_minimize(mpr_costs)
+#' 
+#' # Use branch lengths to scale distances
+#' mpr_costs_bl <- treeseq_linear_mpr(ts, samples, use_brlen=TRUE)
 #'
 #' @export
 treeseq_linear_mpr = function(ts, sample_locations, use_brlen=FALSE,
@@ -711,20 +863,20 @@ treeseq_linear_mpr = function(ts, sample_locations, use_brlen=FALSE,
 #' \code{\link{treeseq_linear_mpr_minimize_discrete}} for discrete location assignments
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Define sample locations (3 samples in 2D space)
-#' samples <- data.frame(
-#'   node_id = 0:2,
-#'   x = c(0.5, 1.25, 2.0),
-#'   y = c(2.7, 0.41, 1.5)
-#' )
-#'
-#' # Compute absolute distance costs
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Define the x and y coordinates (locations)
+#' x <- c(0, 2, 1)
+#' y <- c(0, 0, 1)
+#' 
+#' # Create the matrix using cbind() and ensuring integer type
+#' samples <- cbind(node_id = 0:2, x = as.integer(x), y = as.integer(y))
+#' 
 #' mpr_costs <- treeseq_linear_mpr(ts, samples)
-#'
-#' # Find optimal continuous locations
+#' 
+#' # Find optimal continuous locations for all nodes 0-6
+#' # Unlike quadratic MPR, optimal locations often at sample coordinates
 #' locations <- treeseq_linear_mpr_minimize(mpr_costs)
 #'
 #' @export
@@ -766,27 +918,26 @@ treeseq_linear_mpr_minimize = function(obj)
 #' \code{\link{treeseq_linear_mpr_minimize}} for continuous location assignments
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Define sample locations (3 samples in 2D space)
-#' samples <- data.frame(
-#'   node_id = 0:2,
-#'   x = c(0.5, 1.25, 2.0),
-#'   y = c(2.7, 0.41, 1.5)
-#' )
-#'
-#' # Define possible ancestral locations
-#' sites <- matrix(c(
-#'   0.5, 2.7,  # Site 1
-#'   1.25, 0.41,  # Site 2
-#'   2.0, 1.5  # Site 3
-#' ), ncol=2, byrow=TRUE)
-#'
-#' # Compute absolute distance costs
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Define the x and y coordinates (locations)
+#' x <- c(0, 2, 1)
+#' y <- c(0, 0, 1)
+#' 
+#' # Create the matrix using cbind() and ensuring integer type
+#' samples <- cbind(node_id = 0:2, x = as.integer(x), y = as.integer(y))
+#' 
 #' mpr_costs <- treeseq_linear_mpr(ts, samples)
-#'
-#' # Find optimal discrete locations
+#' 
+#' # Define possible locations matching sample coordinates
+#' sites <- matrix(c(
+#'   0, 0,    # Site 1: matches node 0
+#'   2, 0,    # Site 2: matches node 1 
+#'   1, 1     # Site 3: matches node 2
+#' ), ncol=2, byrow=TRUE)
+#' 
+#' # Get optimal site assignment for all nodes 0-6
 #' location_indices <- treeseq_linear_mpr_minimize_discrete(mpr_costs, sites)
 #'
 #' @export

@@ -37,17 +37,17 @@
 #' \code{\link{treeseq_populations}} for accessing population information
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
 #' # Get nodes table
 #' nodes <- treeseq_nodes(ts)
-#'
-#' # Find all sample nodes
+#' 
+#' # Find sample nodes (0-2)
 #' samples <- nodes[nodes$is_sample, ]
-#'
-#' # Find oldest node
-#' oldest <- which.max(nodes$time)
+#' 
+#' # Find oldest nodes (nodes 5 and 6 at times 0.8 and 1.0)
+#' oldest <- nodes[nodes$time > 0.7, ]
 #'
 #' @export
 treeseq_nodes = function(ts)
@@ -87,10 +87,10 @@ treeseq_nodes = function(ts)
 #' \code{\link{treeseq_num_samples}} for counting just sample nodes
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Count nodes
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Count nodes (should be 7: samples 0-2 and internal nodes 3-6)
 #' n_nodes <- treeseq_num_nodes(ts)
 #'
 #' @export
@@ -129,10 +129,10 @@ treeseq_num_nodes = function(ts)
 #' \code{\link{treeseq_num_nodes}} for counting all nodes
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Count samples
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Count samples (should be 3: nodes 0-2)
 #' n_samples <- treeseq_num_samples(ts)
 #'
 #' @export

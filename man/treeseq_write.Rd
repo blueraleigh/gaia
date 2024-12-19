@@ -30,11 +30,15 @@ The saved file can be:
 - Used with other software supporting the tskit format
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
-# Save to new file
-treeseq_write(ts, "output.trees")
+# Save a copy to a temporary file
+temp_file <- tempfile(fileext = ".trees") # Create a temporary file path
+treeseq_write(ts, temp_file)
+
+# Load the copy to verify
+ts2 <- treeseq_load(temp_file)
 
 }
 \seealso{

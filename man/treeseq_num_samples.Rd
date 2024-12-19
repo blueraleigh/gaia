@@ -26,10 +26,10 @@ The count includes all nodes flagged as samples, regardless of:
 - Which individual they belong to
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
-# Count samples
+# Count samples (should be 3: nodes 0-2)
 n_samples <- treeseq_num_samples(ts)
 
 }

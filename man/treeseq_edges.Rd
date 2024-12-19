@@ -37,16 +37,16 @@ Node IDs reference entries in the node table, which can be accessed via
 \code{treeseq_nodes}. Both edge_id and node IDs use 0-based indexing.
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
 # Get edge table
 edges <- treeseq_edges(ts)
 
-# Find edges from a specific parent
-parent_edges <- edges[edges$parent_id == 0, ]
+# Find edges from node 4 (appears in all three trees)
+parent_edges <- edges[edges$parent_id == 4, ]
 
-# Find edges to a specific child
+# Find edges to node 1 (changes parent across trees)
 child_edges <- edges[edges$child_id == 1, ]
 
 }

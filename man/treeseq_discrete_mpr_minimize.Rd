@@ -36,28 +36,19 @@ when calling \code{treeseq_discrete_mpr}. Set index1=FALSE to use 0-based
 indexing, which may be more convenient when working with tree sequence node IDs.
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
-# Define sample locations (3 samples in 2 states)
-samples <- data.frame(
-  node_id = 0:2,
-  state_id = c(1,2,1)
-)
-
-# Create cost matrix for 2 states
-costs <- matrix(c(
-  0, 1,
-  1, 0
-), 2, 2)
-
-# Compute migration costs
+# Set up discrete state reconstruction
+state = c(2L,1L,1L)
+samples = cbind(node_id=0:2, state_id=state)
+costs <- matrix(c(0,1,1,0), 2, 2)
 mpr_costs <- treeseq_discrete_mpr(ts, samples, costs)
 
-# Find optimal states (1-based indexing)
+# Get optimal states for all nodes (0-6)
 states <- treeseq_discrete_mpr_minimize(mpr_costs)
 
-# Find optimal states (0-based indexing)
+# Same with 0-based state indexing
 states0 <- treeseq_discrete_mpr_minimize(mpr_costs, index1=FALSE)
 
 }

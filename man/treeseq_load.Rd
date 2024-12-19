@@ -30,14 +30,16 @@ constituent local trees. The tree slot initially points to the first local tree,
 but can be updated to other trees using \code{treeseq_sample}.
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
-# Access tables
+# Access node table showing sample nodes 0-2 and internal nodes 3-6
 nodes <- treeseq_nodes(ts)
+
+# Access edge table showing topology changes across three intervals
 edges <- treeseq_edges(ts)
 
-# View current local tree
+# View first local tree (interval [0,20))
 tree <- treeseq_to_phylo(ts)
 
 }

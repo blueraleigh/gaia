@@ -2,7 +2,7 @@
 % Please edit documentation in R/treeseq_sankoff.R
 \name{treeseq_discrete_mpr_ancestry_flux}
 \alias{treeseq_discrete_mpr_ancestry_flux}
-\title{Spatiotemporal ancestry flux coefficients}
+\title{Compute migration flux between geographic regions through time}
 \usage{
 treeseq_discrete_mpr_ancestry_flux(
   ts,
@@ -15,30 +15,81 @@ treeseq_discrete_mpr_ancestry_flux(
 )
 }
 \arguments{
-\item{ts}{An object of class \code{treeseq}.}
+\item{ts}{A \code{treeseq} object}
 
-\item{obj}{The result of \code{treeseq_discrete_mpr}.}
+\item{obj}{Result object from \code{treeseq_discrete_mpr}}
 
-\item{cost_matrix}{A numeric matrix giving the state-to-state migration
-costs. All costs should be non-negative and any non-zero costs on the 
-diagonal will be ignored.}
+\item{cost_matrix}{Symmetric numeric matrix of migration costs between states}
 
-\item{adjacency_matrix}{A binary matrix specifying geographic connections.
-Geographic states \code{i} and \code{j} are connected if the corresponding
-entry in \code{adjacency_matrix} is 1.}
+\item{adjacency_matrix}{Binary matrix specifying allowed transitions between states}
 
-\item{times}{A set of times ordered from present to past giving the intervals
-used for calculating flux coefficients.}
+\item{times}{Numeric vector of time points defining intervals for flux calculation,
+must be ordered from present (0) to past}
 
-\item{state_sets}{An integer vector with one entry for each geographic
-state specifying the set to which that state belongs. Sets must be numbered
-beginning from 1.}
+\item{state_sets}{Integer vector grouping states into regions. Length must match
+number of states, values indicate region membership (1-based)}
 
-\item{sample_sets}{An integer vector with one entry for each sample
-specifying the set to which that sample belongs. Sets must be numbered
-beginning from 1. A value of 0 may be used to indicate that the sample
-belongs to none of the sets and hence is to be excluded from the calculation.}
+\item{sample_sets}{Integer vector grouping samples into subsets. Length must match
+number of samples, values indicate subset membership (1-based). Use 0 to exclude
+samples.}
+}
+\value{
+A 4-dimensional array with dimensions:
+  [source_region, dest_region, sample_subset, time_interval]
+Values represent the proportion of sample_subset's genome that moved from
+source_region to dest_region during each time_interval.
 }
 \description{
-Spatiotemporal ancestry flux coefficients
+Tracks the movement of genetic material between geographic regions over time by
+computing the proportion of each sample subset's genome that migrated between
+each pair of regions during different time intervals.
+}
+\details{
+This function extends ancestry coefficient calculations by explicitly tracking
+migrations between regions. For each time interval, it identifies genetic material
+that changed regions during that interval and records the source and destination
+regions.
+
+States can be grouped into regions using state_sets. For example, multiple
+states might represent different locations within the same continent. Similarly,
+samples can be grouped into subsets using sample_sets, allowing calculation
+of migration flux for different populations or sampling locations.
+
+The function uses the migration paths sampled by edge_history to determine
+when migrations occurred. Different random samplings of migration paths may
+give slightly different results when multiple equally parsimonious paths exist.
+
+Time intervals are defined by consecutive pairs of values in the times parameter.
+The flux value for an interval represents all migrations that occurred between
+the start and end of that interval.
+}
+\examples{
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+
+# Set up states, costs, and adjacency 
+state = c(2L,1L,1L)
+samples = cbind(node_id=0:2, state_id=state)
+costs <- matrix(c(0,1,1,0), 2, 2)
+adjacency <- matrix(1, 2, 2)
+diag(adjacency) <- 0
+
+# Compute base MPR
+mpr_costs <- treeseq_discrete_mpr(ts, samples, costs)
+
+# Define timepoints for flux intervals
+# Times should span node times (0-1.0)
+times <- seq(0, 1.0, by=0.2)
+
+# Compute migration flux between states over time
+flux <- treeseq_discrete_mpr_ancestry_flux(
+  ts, mpr_costs, costs, adjacency, times,
+  state_sets=1:2,     # Keep states separate
+  sample_sets=1:3     # Keep samples separate
+)
+
+}
+\seealso{
+\code{\link{treeseq_discrete_mpr_edge_history}} for the underlying migration paths
+\code{\link{treeseq_discrete_mpr_ancestry}} for static ancestry proportions
 }

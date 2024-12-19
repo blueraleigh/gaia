@@ -12,3 +12,4 @@ NeedsCompilation: yes
 Imports: methods, Matrix
 License: MIT + file LICENSE
 RoxygenNote: 7.3.2
+Encoding: UTF-8

@@ -39,16 +39,16 @@ At least one of parent or child must be specified. If both are specified, edges
 matching either criterion are removed.
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence 
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
-# Remove all edges from node 5 
+# Remove all edges from node 4 (internal node present in all trees)
 ts2 <- treeseq_drop_edges(ts, parent=4)
 
-# Remove all edges to nodes 1 and 2
+# Remove edges to sample nodes 0 and 1
 ts3 <- treeseq_drop_edges(ts, child=c(0,1))
 
-# Remove edges from node 5 and to nodes 1 and 2
+# Remove both sets of edges
 ts4 <- treeseq_drop_edges(ts, parent=4, child=c(0,1))
 
 }

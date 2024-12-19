@@ -51,13 +51,13 @@
 #' \code{\link{treeseq_drop_edges}} for selective edge removal
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Simplify to first two samples
+#' # Load tree sequence 
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Simplify to just nodes 0 and 1
 #' ts2 <- treeseq_simplify(ts, samples=c(0,1))
-#'
-#' # Get mapping between old and new node IDs
+#' 
+#' # Get mapping between old and new node IDs for all nodes 0-6
 #' ts3 <- treeseq_simplify(ts, samples=c(0,1), node.map=TRUE)
 #' node_map <- attr(ts3, "node.map")
 #'

@@ -35,27 +35,26 @@ discrete set of possibilities (e.g., habitat patches, sampling locations)
 despite using a continuous-space reconstruction method.
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
-# Define sample locations (3 samples in 2D space)
-samples <- data.frame(
-  node_id = 0:2,
-  x = c(0.5, 1.25, 2.0),
-  y = c(2.7, 0.41, 1.5)
-)
+# Define the x and y coordinates (locations)
+x <- c(0, 2, 1)
+y <- c(0, 0, 1)
 
-# Define possible ancestral locations
-sites <- matrix(c(
-  0.5, 2.7,  # Site 1
-  1.25, 0.41,  # Site 2
-  2.0, 1.5  # Site 3
-), ncol=2, byrow=TRUE)
+# Create the matrix using cbind() and ensuring integer type
+samples <- cbind(node_id = 0:2, x = as.integer(x), y = as.integer(y))
 
-# Compute absolute distance costs
 mpr_costs <- treeseq_linear_mpr(ts, samples)
 
-# Find optimal discrete locations
+# Define possible locations matching sample coordinates
+sites <- matrix(c(
+  0, 0,    # Site 1: matches node 0
+  2, 0,    # Site 2: matches node 1 
+  1, 1     # Site 3: matches node 2
+), ncol=2, byrow=TRUE)
+
+# Get optimal site assignment for all nodes 0-6
 location_indices <- treeseq_linear_mpr_minimize_discrete(mpr_costs, sites)
 
 }

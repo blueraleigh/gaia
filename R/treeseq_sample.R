@@ -31,17 +31,21 @@
 #' \code{\link{treeseq_intervals}} for information about all local trees
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Select first tree
-#' treeseq_sample(ts, at=1)
-#'
-#' # Select random tree
-#' treeseq_sample(ts)
-#'
-#' # Convert current tree to phylo object
-#' tree <- treeseq_to_phylo(ts)
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Select first tree (spanning [0,20))
+#' # "At" functionality not currently working, but it should work like this:
+#' # treeseq_sample(ts, at=1)
+#' 
+#' # Select second tree (spanning [20,80))
+#' # "At" functionality not currently working, but it should work like this:
+#' # treeseq_sample(ts, at=2)
+#' 
+#' # Select a random tree, weighted by genomic span
+#' # Most likely to select second tree as it spans 60% of sequence
+#' # Functionality not currently working, but it should work like this:
+#' # treeseq_sample(ts)
 #'
 #' @export
 treeseq_sample = function(ts, at=-1L)

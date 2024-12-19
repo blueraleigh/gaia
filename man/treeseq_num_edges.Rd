@@ -26,8 +26,8 @@ parent-child pair may be represented by multiple edges if their relationship
 exists over disconnected genomic intervals.
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
 # Count edges
 n_edges <- treeseq_num_edges(ts)

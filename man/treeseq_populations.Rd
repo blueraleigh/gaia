@@ -34,8 +34,8 @@ Population IDs use 0-based indexing and are referenced by the population_id
 column in the nodes table.
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
 # Get populations table
 pops <- treeseq_populations(ts)

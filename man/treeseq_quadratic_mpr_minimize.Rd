@@ -33,21 +33,22 @@ children) in the tree, weighted by the proportion of the genome inherited
 through each connection.
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
-# Define sample locations (3 samples in 2D space)
-samples <- data.frame(
-  node_id = 0:2,
-  x = c(0.5, 1.25, 2.0),
-  y = c(2.7, 0.41, 1.5)
-)
+# Define the x and y coordinates (locations)
+x <- c(0, 2, 1)
+y <- c(0, 0, 1)
 
-# Compute squared distance costs
+# Create the matrix using cbind() and ensuring integer type
+samples <- cbind(node_id = 0:2, x = as.integer(x), y = as.integer(y))
+
 mpr_costs <- treeseq_quadratic_mpr(ts, samples)
 
-# Find optimal continuous locations
+# Find optimal continuous locations for all nodes 0-6
 locations <- treeseq_quadratic_mpr_minimize(mpr_costs)
+# Results should place internal nodes 3-6 at weighted averages
+# of their descendants' positions
 
 }
 \seealso{

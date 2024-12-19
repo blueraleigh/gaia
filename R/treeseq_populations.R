@@ -29,9 +29,9 @@
 #' \code{\link{treeseq_nodes}} for accessing node information
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
 #' # Get populations table
 #' pops <- treeseq_populations(ts)
 #'

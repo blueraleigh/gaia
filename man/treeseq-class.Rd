@@ -33,11 +33,8 @@ using \code{treeseq_to_phylo}.
 }}
 
 \examples{
-# Create a new empty tree sequence object
-ts <- new("treeseq")
-
-# More commonly, load from file
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load a tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
 }
 \seealso{

@@ -40,17 +40,17 @@ Times are measured backwards from the present (0), increasing into the past. The
 time units (e.g., generations, years) depend on how the tree sequence was created.
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
 # Get nodes table
 nodes <- treeseq_nodes(ts)
 
-# Find all sample nodes
+# Find sample nodes (0-2)
 samples <- nodes[nodes$is_sample, ]
 
-# Find oldest node
-oldest <- which.max(nodes$time)
+# Find oldest nodes (nodes 5 and 6 at times 0.8 and 1.0)
+oldest <- nodes[nodes$time > 0.7, ]
 
 }
 \seealso{

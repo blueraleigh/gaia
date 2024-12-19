@@ -3,3 +3,4 @@ exportPattern("^[[:alpha:]]+")
 
 importFrom(methods, as)
 importFrom(Matrix, Matrix)
+importFrom(methods, new)

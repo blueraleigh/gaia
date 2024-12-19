@@ -39,14 +39,11 @@ Individual IDs use 0-based indexing and are referenced by the individual_id
 column in the nodes table.
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
 # Get individuals table
 inds <- treeseq_individuals(ts)
-
-# Get locations of all individuals
-locations <- sapply(inds[,"location"], identity)
 
 }
 \seealso{

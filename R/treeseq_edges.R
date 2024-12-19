@@ -34,16 +34,16 @@
 #' \code{\link{treeseq_drop_edges}} for removing edges
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
 #' # Get edge table
 #' edges <- treeseq_edges(ts)
-#'
-#' # Find edges from a specific parent
-#' parent_edges <- edges[edges$parent_id == 0, ]
-#'
-#' # Find edges to a specific child
+#' 
+#' # Find edges from node 4 (appears in all three trees)
+#' parent_edges <- edges[edges$parent_id == 4, ]
+#' 
+#' # Find edges to node 1 (changes parent across trees)
 #' child_edges <- edges[edges$child_id == 1, ]
 #'
 #' @export
@@ -83,12 +83,12 @@ treeseq_edges = function(ts)
 #' \code{\link{treeseq_drop_edges}} for removing edges
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
 #' # Count edges
 #' n_edges <- treeseq_num_edges(ts)
-#'
+#' 
 #' @export
 treeseq_num_edges = function(ts)
 {
@@ -137,16 +137,16 @@ treeseq_num_edges = function(ts)
 #' \code{\link{treeseq_simplify}} for general tree sequence simplification
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Remove all edges from node 5 
+#' # Load tree sequence 
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Remove all edges from node 4 (internal node present in all trees)
 #' ts2 <- treeseq_drop_edges(ts, parent=4)
-#'
-#' # Remove all edges to nodes 1 and 2
+#' 
+#' # Remove edges to sample nodes 0 and 1
 #' ts3 <- treeseq_drop_edges(ts, child=c(0,1))
-#'
-#' # Remove edges from node 5 and to nodes 1 and 2
+#' 
+#' # Remove both sets of edges
 #' ts4 <- treeseq_drop_edges(ts, parent=4, child=c(0,1))
 #'
 #' @export

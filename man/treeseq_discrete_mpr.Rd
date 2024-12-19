@@ -56,26 +56,26 @@ from state i to state j. Diagonal elements are ignored since they represent the
 cost of remaining in the same state, which is always 0.
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
-# Define sample locations (3 samples in 2 states)
-samples <- data.frame(
-  node_id = 0:2,        # Node IDs use 0-based indexing
-  state_id = c(1,2,1)   # States use 1-based indexing
-)
+# Define sample locations - nodes 0 and 2 in one state, node 1 in another
+state = c(2L,1L,1L)
+samples = cbind(node_id=0:2, state_id=state)
 
 # Create cost matrix for 2 states
+# Migration between states has cost 1
 costs <- matrix(c(
-  0, 1,  # Cost of 1 to move between states
+  0, 1,  
   1, 0
 ), 2, 2)
 
 # Compute migration costs
+# Will calculate costs at nodes 3-6 based on samples 0-2
 mpr_costs <- treeseq_discrete_mpr(ts, samples, costs)
 
-# Find optimal states using the costs
-states <- treeseq_discrete_mpr_minimize(mpr_costs)
+# Can also use branch lengths to scale costs
+mpr_costs_bl <- treeseq_discrete_mpr(ts, samples, costs, use_brlen=TRUE)
 
 }
 \references{

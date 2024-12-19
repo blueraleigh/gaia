@@ -24,11 +24,15 @@
 #' \code{\link{treeseq_load}} for loading saved tree sequences
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 #'
-#' # Save to new file
-#' treeseq_write(ts, "output.trees")
+#' # Save a copy to a temporary file
+#' temp_file <- tempfile(fileext = ".trees") # Create a temporary file path
+#' treeseq_write(ts, temp_file)
+#'
+#' # Load the copy to verify
+#' ts2 <- treeseq_load(temp_file)
 #'
 #' @export
 treeseq_write = function(ts, filename)

@@ -37,17 +37,15 @@ A tree can have multiple roots when there are lineages that have not yet coalesc
 at the top of the tree. The age of a root is its time value in the node table.
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
 # Get information about all local trees
 trees <- treeseq_intervals(ts)
+# Should show three trees spanning [0,20), [20,80), and [80,100)
 
-# Find trees with multiple roots
-multi_root <- which(trees[,"num_roots"] > 1)
-
-# Find oldest tree
-oldest <- which.max(trees[,"max_root_age"])
+# Find trees with root node 4
+roots4 <- which(trees[,"num_roots"] == 1 & trees[,"max_root_age"] == 0.6)
 
 }
 \seealso{

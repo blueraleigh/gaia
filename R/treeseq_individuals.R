@@ -35,14 +35,11 @@
 #' \code{\link{treeseq_populations}} for accessing population information
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
 #' # Get individuals table
 #' inds <- treeseq_individuals(ts)
-#'
-#' # Get locations of all individuals
-#' locations <- sapply(inds[,"location"], identity)
 #'
 #' @export
 treeseq_individuals = function(ts)

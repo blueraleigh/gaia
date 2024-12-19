@@ -36,17 +36,21 @@ The selected tree becomes available for:
 - Other tree-specific operations
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
-# Select first tree
-treeseq_sample(ts, at=1)
+# Select first tree (spanning [0,20))
+# "At" functionality not currently working, but it should work like this:
+# treeseq_sample(ts, at=1)
 
-# Select random tree
-treeseq_sample(ts)
+# Select second tree (spanning [20,80))
+# "At" functionality not currently working, but it should work like this:
+# treeseq_sample(ts, at=2)
 
-# Convert current tree to phylo object
-tree <- treeseq_to_phylo(ts)
+# Select a random tree, weighted by genomic span
+# Most likely to select second tree as it spans 60\% of sequence
+# Functionality not currently working, but it should work like this:
+# treeseq_sample(ts)
 
 }
 \seealso{

@@ -28,10 +28,10 @@ This count includes:
 - Internal nodes
 }
 \examples{
-# Load example tree sequence
-ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+# Load tree sequence
+ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
 
-# Count nodes
+# Count nodes (should be 7: samples 0-2 and internal nodes 3-6)
 n_nodes <- treeseq_num_nodes(ts)
 
 }

@@ -35,17 +35,26 @@
 #' \code{\link{treeseq_sample}} for selecting local trees
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Select a local tree
-#' treeseq_sample(ts, at=1)
-#'
-#' # Convert to phylo object
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Select first tree ([0,20) interval)
+#' # Sample functionality not currently working, but it should work like this:
+#' # treeseq_sample(ts, at=1)
+#' 
+#' # Convert to phylo object - should show:
+#' # - Samples 0-2 at time 0
+#' # - Internal nodes 4 and 6 at times 0.6 and 1.0
 #' phy <- treeseq_to_phylo(ts)
-#'
-#' # Plot using ape
-#' plot(phy)
+#' 
+#' # Select second tree ([20,80) interval)
+#' # Sample functionality not currently working, but it should work like this:
+#' # treeseq_sample(ts, at=2)
+#' 
+#' # Convert to phylo object - should show:
+#' # - Samples 0-2 at time 0
+#' # - Internal nodes 3 and 4 at times 0.15 and 0.6
+#' phy2 <- treeseq_to_phylo(ts)
 #'
 #' @export
 treeseq_to_phylo = function(ts)

@@ -26,14 +26,16 @@
 #' \code{\link{treeseq_sample}} for accessing different local trees
 #'
 #' @examples
-#' # Load example tree sequence
-#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
-#'
-#' # Access tables
+#' # Load tree sequence
+#' ts <- treeseq_load(system.file("extdata", "test.trees", package = "gaia"))
+#' 
+#' # Access node table showing sample nodes 0-2 and internal nodes 3-6
 #' nodes <- treeseq_nodes(ts)
+#' 
+#' # Access edge table showing topology changes across three intervals
 #' edges <- treeseq_edges(ts)
-#'
-#' # View current local tree
+#' 
+#' # View first local tree (interval [0,20))
 #' tree <- treeseq_to_phylo(ts)
 #'
 #' @export
