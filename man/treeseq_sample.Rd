@@ -2,25 +2,54 @@
 % Please edit documentation in R/treeseq_sample.R
 \name{treeseq_sample}
 \alias{treeseq_sample}
-\title{Seek to a local tree in a tree sequence}
+\title{Select a local tree from a tree sequence}
 \usage{
 treeseq_sample(ts, at = -1L)
 }
 \arguments{
-\item{ts}{A \code{treeseq} object.}
+\item{ts}{A \code{treeseq} object}
 
-\item{at}{The index of the local tree to seek to. If less than or equal to 
-zero (default), a random index is used.}
+\item{at}{Integer specifying which local tree to select (1-based indexing). If 
+less than or equal to 0 (default), a random tree is selected with probability 
+proportional to its genomic span.}
 }
 \value{
-The index of the local tree that \code{ts@tree} points to.
+Integer giving the index of the selected tree (1-based)
 }
 \description{
-Seek to a local tree in a tree sequence
+Updates the current local tree pointer in a tree sequence object to reference 
+either a specific tree or a randomly chosen tree. The selected tree can then be 
+accessed using other functions.
 }
 \details{
-While this function does not return anything, it modifies the
-underlying representation of the tree sequence so that \code{ts@tree}
-points to a specific local tree as determined by the value of the \code{at}
-parameter.
+A tree sequence consists of a sequence of local trees along a genome. This 
+function updates which local tree is currently being referenced by the tree 
+sequence object.
+
+When at ≤ 0, a tree is chosen randomly with probability proportional to its 
+genomic span. This means trees covering longer genomic intervals are more likely 
+to be selected.
+
+The selected tree becomes available for:
+- Converting to phylo format via \code{treeseq_to_phylo}
+- Exploring its structure and properties
+- Other tree-specific operations
+}
+\examples{
+# Load example tree sequence
+ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+
+# Select first tree
+treeseq_sample(ts, at=1)
+
+# Select random tree
+treeseq_sample(ts)
+
+# Convert current tree to phylo object
+tree <- treeseq_to_phylo(ts)
+
+}
+\seealso{
+\code{\link{treeseq_to_phylo}} for converting the selected tree
+\code{\link{treeseq_intervals}} for information about all local trees
 }

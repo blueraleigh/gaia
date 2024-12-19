@@ -2,16 +2,54 @@
 % Please edit documentation in R/treeseq_individuals.R
 \name{treeseq_individuals}
 \alias{treeseq_individuals}
-\title{Return the tree sequence individuals table}
+\title{Access the individuals table of a tree sequence}
 \usage{
 treeseq_individuals(ts)
 }
 \arguments{
-\item{ts}{A \code{treeseq} object.}
+\item{ts}{A \code{treeseq} object}
 }
 \value{
-The tree sequence individuals table as a \code{matrix} object.
+A matrix with columns:
+  \describe{
+    \item{individual_id}{Unique identifier for each individual (0-based indexing)}
+    \item{location}{Numeric vector of spatial coordinates}
+    \item{parents}{Integer vector of parent individual IDs (0-based indexing)}
+    \item{metadata}{Raw vector containing individual-specific metadata}
+  }
 }
 \description{
-Return the tree sequence individuals table
+Returns the individuals table from a tree sequence, which records information about 
+distinct individuals (organisms) represented in the tree sequence. Each individual 
+can have spatial locations, parent-child relationships, and metadata.
+}
+\details{
+The individuals table stores information about distinct organisms in the tree 
+sequence. Each individual can:
+- Have multiple nodes associated with it (e.g., maternal and paternal genomes)
+- Be located in space via coordinates
+- Have recorded parents
+- Carry additional metadata
+
+Location coordinates and parent IDs are stored as variable-length vectors for each 
+individual. The interpretation of location coordinates (e.g., as geographic 
+coordinates, plot coordinates) depends on how the tree sequence was created.
+
+Individual IDs use 0-based indexing and are referenced by the individual_id 
+column in the nodes table.
+}
+\examples{
+# Load example tree sequence
+ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+
+# Get individuals table
+inds <- treeseq_individuals(ts)
+
+# Get locations of all individuals
+locations <- sapply(inds[,"location"], identity)
+
+}
+\seealso{
+\code{\link{treeseq_nodes}} for accessing node information
+\code{\link{treeseq_populations}} for accessing population information
 }

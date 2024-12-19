@@ -1,21 +1,53 @@
-#' Extract a local tree from a tree sequence
+#' Convert current local tree to phylo object
 #'
-#' @param ts A \code{treeseq} object.
-#' @return A \code{phlyo} object representing the current local tree.
-#' @details Two additional components are added to the returned \code{phylo}
-#' object
-#' \describe{
-#' \item{$node.id}{A vector that maps the node indices in the \code{phylo}
-#' object to their corresponding identifiers in the tree sequence. E.g.,
-#' \code{$node.id[i]} will return the tree sequence node id of the node with
-#' index \code{i} in the \code{phylo} object.} 
-#' \item{$edge.id}{A vector that maps the edge indices in the \code{phylo}
-#' object to their corresponding identifiers in the tree sequence.}
-#'}
-#' NB: both of these components are invalidated if the \code{phylo} object is
-#' reordered by a call to \code{ape::reorder.phylo}.
-#' @note A call to this function should be preceded by a call to 
-#' \code{treeseq_sample}.
+#' @description
+#' Creates an ape-compatible phylogenetic tree object (\code{phylo}) representing 
+#' the current local tree in a tree sequence. The resulting object can be used 
+#' with ape's plotting and analysis functions.
+#'
+#' @param ts A \code{treeseq} object
+#'
+#' @return A \code{phylo} object with additional components:
+#'   \describe{
+#'     \item{node.id}{Integer vector mapping phylo node indices to tree sequence 
+#'       node IDs}
+#'     \item{edge.id}{Integer vector mapping phylo edge indices to tree sequence 
+#'       edge IDs}
+#'   }
+#'
+#' @details
+#' The function converts the current local tree (as indicated by \code{ts@tree}) 
+#' to ape's phylo format. The local tree can be changed using \code{treeseq_sample}.
+#'
+#' Two additional components are added to help map between tree sequence and phylo 
+#' objects:
+#' - node.id maps from phylo node indices to tree sequence node IDs
+#' - edge.id maps from phylo edge indices to tree sequence edge IDs
+#'
+#' Note: These mappings become invalid if the phylo object is reordered (e.g., via 
+#' \code{ape::reorder.phylo}).
+#'
+#' @section Warning:
+#' The function assumes \code{treeseq_sample} has been called to select a local 
+#' tree. Without this, it will convert the first tree by default.
+#'
+#' @seealso
+#' \code{\link{treeseq_sample}} for selecting local trees
+#'
+#' @examples
+#' # Load example tree sequence
+#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+#'
+#' # Select a local tree
+#' treeseq_sample(ts, at=1)
+#'
+#' # Convert to phylo object
+#' phy <- treeseq_to_phylo(ts)
+#'
+#' # Plot using ape
+#' plot(phy)
+#'
+#' @export
 treeseq_to_phylo = function(ts)
 {
     stopifnot(inherits(ts, "treeseq"))

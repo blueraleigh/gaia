@@ -2,34 +2,89 @@
 % Please edit documentation in R/treeseq_sankoff.R
 \name{treeseq_discrete_mpr}
 \alias{treeseq_discrete_mpr}
-\title{Compute minimum migration costs for genetic ancestors in a tree sequence}
+\title{Compute minimum migration costs for geographic ancestry reconstruction}
 \usage{
 treeseq_discrete_mpr(ts, sample_locations, cost_matrix, use_brlen = FALSE)
 }
 \arguments{
-\item{ts}{A \code{treeseq} object.}
+\item{ts}{A \code{treeseq} object, typically loaded via \code{\link{treeseq_load}}}
 
-\item{sample_locations}{An integer matrix giving the geographic locations
-of sampled genomes. The 'node_id' column specifies the node identifier of
-of each sample in the tree sequence, and the 'state_id' columns specifies the
-geographic state where each sample is found. Note that node identifiers use
-a 0-based index while state identifiers use a 1-based index.}
+\item{sample_locations}{An integer matrix with two columns:
+\describe{
+  \item{node_id}{Node identifiers for sampled genomes (0-based indexing)}
+  \item{state_id}{Geographic state assignments for samples (1-based indexing)}
+}}
 
-\item{cost_matrix}{A numeric matrix giving the state-to-state migration
-costs that will be used by the optimization. All costs should be non-negative
-and any non-zero costs on the diagonal will be ignored.}
+\item{cost_matrix}{A symmetric numeric matrix where entry [i,j] gives the migration
+cost between states i and j. Must have non-negative values. Diagonal elements 
+(representing costs of remaining in the same state) are ignored.}
 
-\item{use_brlen}{A logical specifying whether or not to scale the migration
-costs by inverse branch lengths. The default (FALSE) ignores branch lengths
-in the optimization.}
+\item{use_brlen}{Logical indicating whether to scale migration costs by inverse
+branch lengths (TRUE) or treat all branches equally (FALSE, default)}
+}
+\value{
+A list with class \code{c("discrete", "mpr")} containing:
+  \describe{
+    \item{mean_tree_length}{Genome-wide average migration cost}
+    \item{tree_length}{Vector giving the migration cost for each local tree}
+    \item{mpr}{Matrix where entry [i,j] gives the minimum migration cost needed
+      to explain sample locations when node i is placed in state j}
+  }
 }
 \description{
-Compute minimum migration costs for genetic ancestors in a tree sequence
+Uses generalized (Sankoff) parsimony to compute the minimum migration costs needed 
+to explain sampled geographic locations under different possible ancestral state 
+assignments. For each ancestral node and potential geographic state, calculates 
+the total migration cost required to explain all sampled descendant locations when 
+that ancestor is assigned to that state.
 }
 \details{
-Returns a numeric vector \code{f} for each ancestral node in the
-tree sequence such that \code{f[i]} gives the average (taken over all base
-pairs in the ancestor) minimum migration cost needed to explain the
-geographic distribution of \emph{all} sample nodes when the ancestor is
-located in geographic state \code{i}.
+This function implements generalized parsimony on tree sequences using the 
+algorithm of Sankoff and Rousseau (1975). It calculates minimum migration cost 
+functions for each node by proceeding up the tree sequence from samples to 
+ancestral nodes. These costs are then used to determine optimal geographic 
+locations using \code{treeseq_discrete_mpr_minimize}.
+
+For each non-sample node, the function computes the minimum total migration cost 
+needed to explain the geographic locations of all sampled descendants under each 
+possible geographic state assignment for that node. These costs are averaged 
+across all base pairs in the genome that inherit from the node.
+
+Migration costs are specified through the cost_matrix parameter. The matrix must
+be symmetric and have non-negative values. Entry [i,j] gives the cost of migrating
+from state i to state j. Diagonal elements are ignored since they represent the
+cost of remaining in the same state, which is always 0.
+}
+\examples{
+# Load example tree sequence
+ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+
+# Define sample locations (3 samples in 2 states)
+samples <- data.frame(
+  node_id = 0:2,        # Node IDs use 0-based indexing
+  state_id = c(1,2,1)   # States use 1-based indexing
+)
+
+# Create cost matrix for 2 states
+costs <- matrix(c(
+  0, 1,  # Cost of 1 to move between states
+  1, 0
+), 2, 2)
+
+# Compute migration costs
+mpr_costs <- treeseq_discrete_mpr(ts, samples, costs)
+
+# Find optimal states using the costs
+states <- treeseq_discrete_mpr_minimize(mpr_costs)
+
+}
+\references{
+Sankoff, D. and Rousseau, P. (1975) Locating the vertices of a Steiner tree in 
+arbitrary space. \emph{Mathematical Programming}, 9:240-246.
+}
+\seealso{
+\code{\link{treeseq_discrete_mpr_minimize}} for determining optimal state assignments
+\code{\link{treeseq_discrete_mpr_edge_history}} for reconstructing migration histories
+\code{\link{treeseq_quadratic_mpr}} for continuous-space reconstruction
+\code{\link{treeseq_linear_mpr}} for linear cost reconstruction
 }

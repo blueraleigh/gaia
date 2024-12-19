@@ -1,7 +1,52 @@
-#' Return the tree sequence edge table
+#' Access the edge table of a tree sequence
 #'
-#' @param ts A \code{treeseq} object.
-#' @return The tree sequence edge table as a \code{data.frame} object.
+#' @description
+#' Returns the edge table from a tree sequence, which defines the genealogical 
+#' relationships between nodes. Each edge records a parent-child relationship along 
+#' with the genomic interval over which that relationship holds.
+#'
+#' @param ts A \code{treeseq} object
+#'
+#' @return A data frame with columns:
+#'   \describe{
+#'     \item{edge_id}{Unique identifier for each edge (0-based indexing)}
+#'     \item{left}{Left endpoint of the genomic interval (inclusive)}
+#'     \item{right}{Right endpoint of the genomic interval (exclusive)}
+#'     \item{parent_id}{Node ID of parent (0-based indexing)}
+#'     \item{child_id}{Node ID of child (0-based indexing)}
+#'   }
+#'
+#' @details
+#' The edge table is one of the core components of a tree sequence, defining how 
+#' genetic material is inherited between nodes. Each row describes a parent-child 
+#' relationship that exists over a specific genomic interval.
+#'
+#' The genomic interval [left, right) uses the standard convention where left is 
+#' inclusive and right is exclusive. Intervals are in units defined by the tree 
+#' sequence (typically base pairs or genetic map positions).
+#'
+#' Node IDs reference entries in the node table, which can be accessed via 
+#' \code{treeseq_nodes}. Both edge_id and node IDs use 0-based indexing.
+#'
+#' @seealso
+#' \code{\link{treeseq_nodes}} for accessing node information
+#' \code{\link{treeseq_num_edges}} for counting edges
+#' \code{\link{treeseq_drop_edges}} for removing edges
+#'
+#' @examples
+#' # Load example tree sequence
+#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+#'
+#' # Get edge table
+#' edges <- treeseq_edges(ts)
+#'
+#' # Find edges from a specific parent
+#' parent_edges <- edges[edges$parent_id == 0, ]
+#'
+#' # Find edges to a specific child
+#' child_edges <- edges[edges$child_id == 1, ]
+#'
+#' @export
 treeseq_edges = function(ts)
 {
     stopifnot(inherits(ts, "treeseq"))
@@ -14,9 +59,37 @@ treeseq_edges = function(ts)
 }
 
 
-#' Return the number of edges in a tree sequence
+#' Count the number of edges in a tree sequence
 #'
-#' @param ts A \code{treeseq} object.
+#' @description
+#' Returns the total number of edges in a tree sequence. Each edge represents a 
+#' parent-child relationship over a specific genomic interval.
+#'
+#' @param ts A \code{treeseq} object
+#'
+#' @return Integer giving the number of edges
+#'
+#' @details
+#' The number of edges corresponds to the number of rows in the edge table. Each 
+#' edge defines an ancestor-descendant relationship that exists over some portion 
+#' of the genome.
+#'
+#' This count includes all edges, regardless of their genomic span. The same 
+#' parent-child pair may be represented by multiple edges if their relationship 
+#' exists over disconnected genomic intervals.
+#'
+#' @seealso
+#' \code{\link{treeseq_edges}} for accessing the full edge table
+#' \code{\link{treeseq_drop_edges}} for removing edges
+#'
+#' @examples
+#' # Load example tree sequence
+#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+#'
+#' # Count edges
+#' n_edges <- treeseq_num_edges(ts)
+#'
+#' @export
 treeseq_num_edges = function(ts)
 {
     stopifnot(inherits(ts, "treeseq"))
@@ -29,14 +102,54 @@ treeseq_num_edges = function(ts)
 }
 
 
-#' Drop edges from the tree sequence
+#' Remove edges from a tree sequence
 #'
-#' @param ts A \code{treeseq} object.
-#' @param parent An integer vector of node id's. Edges that emanate from nodes
-#' whose id is in \code{parent} will be dropped.
-#' @param child An integer vector of node id's. Edges that enter nodes whose 
-#' id is in \code{child} will be dropped.
-#' @return A new \code{treeseq} object with the specified edges removed.
+#' @description
+#' Creates a new tree sequence with specified edges removed. Edges can be removed 
+#' based on their parent nodes, child nodes, or both. The resulting tree sequence 
+#' is automatically simplified to maintain a valid topology.
+#'
+#' @param ts A \code{treeseq} object
+#' @param parent Integer vector of node IDs. All edges emanating from these parent 
+#'   nodes will be removed. Uses 0-based indexing.
+#' @param child Integer vector of node IDs. All edges entering these child nodes 
+#'   will be removed. Uses 0-based indexing.
+#'
+#' @return A new \code{treeseq} object with the specified edges removed and the 
+#'   topology simplified
+#'
+#' @details
+#' This function allows selective pruning of relationships from the tree sequence. 
+#' Edges can be removed based on their parent nodes (all edges coming from specific 
+#' ancestors), their child nodes (all edges going to specific descendants), or both.
+#'
+#' After removing edges, the tree sequence is automatically simplified to:
+#' 1. Remove any nodes that become disconnected
+#' 2. Remove redundant nodes (those with only one child)
+#' 3. Merge adjacent edges with identical parent-child relationships
+#' 4. Update sample node flags
+#'
+#' At least one of parent or child must be specified. If both are specified, edges 
+#' matching either criterion are removed.
+#'
+#' @seealso
+#' \code{\link{treeseq_edges}} for viewing the edge table
+#' \code{\link{treeseq_simplify}} for general tree sequence simplification
+#'
+#' @examples
+#' # Load example tree sequence
+#' ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+#'
+#' # Remove all edges from node 5 
+#' ts2 <- treeseq_drop_edges(ts, parent=4)
+#'
+#' # Remove all edges to nodes 1 and 2
+#' ts3 <- treeseq_drop_edges(ts, child=c(0,1))
+#'
+#' # Remove edges from node 5 and to nodes 1 and 2
+#' ts4 <- treeseq_drop_edges(ts, parent=4, child=c(0,1))
+#'
+#' @export
 treeseq_drop_edges = function(ts, parent, child)
 {
     stopifnot(inherits(ts, "treeseq"))

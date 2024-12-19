@@ -2,13 +2,38 @@
 % Please edit documentation in R/treeseq_edges.R
 \name{treeseq_num_edges}
 \alias{treeseq_num_edges}
-\title{Return the number of edges in a tree sequence}
+\title{Count the number of edges in a tree sequence}
 \usage{
 treeseq_num_edges(ts)
 }
 \arguments{
-\item{ts}{A \code{treeseq} object.}
+\item{ts}{A \code{treeseq} object}
+}
+\value{
+Integer giving the number of edges
 }
 \description{
-Return the number of edges in a tree sequence
+Returns the total number of edges in a tree sequence. Each edge represents a 
+parent-child relationship over a specific genomic interval.
+}
+\details{
+The number of edges corresponds to the number of rows in the edge table. Each 
+edge defines an ancestor-descendant relationship that exists over some portion 
+of the genome.
+
+This count includes all edges, regardless of their genomic span. The same 
+parent-child pair may be represented by multiple edges if their relationship 
+exists over disconnected genomic intervals.
+}
+\examples{
+# Load example tree sequence
+ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+
+# Count edges
+n_edges <- treeseq_num_edges(ts)
+
+}
+\seealso{
+\code{\link{treeseq_edges}} for accessing the full edge table
+\code{\link{treeseq_drop_edges}} for removing edges
 }

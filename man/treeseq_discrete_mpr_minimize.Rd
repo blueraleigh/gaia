@@ -2,20 +2,66 @@
 % Please edit documentation in R/treeseq_sankoff.R
 \name{treeseq_discrete_mpr_minimize}
 \alias{treeseq_discrete_mpr_minimize}
-\title{Assign genetic ancestors to a set of discrete geographic locations}
+\title{Determine optimal geographic states from minimum migration costs}
 \usage{
 treeseq_discrete_mpr_minimize(obj, index1 = TRUE)
 }
 \arguments{
-\item{obj}{The result of \code{treeseq_discrete_mpr}.}
+\item{obj}{Result object from \code{\link{treeseq_discrete_mpr}}}
 
-\item{index1}{A logical indicating whether or not the returned state
-assignments should be indexed from 1 (TRUE) or 0 (FALSE).}
+\item{index1}{Logical indicating whether returned state assignments should use
+1-based indexing (TRUE, default) or 0-based indexing (FALSE)}
+}
+\value{
+An integer vector giving the optimal geographic state assignment for
+  each node in the tree sequence. States are indexed from 1 (if index1=TRUE)
+  or 0 (if index1=FALSE).
 }
 \description{
-Assign genetic ancestors to a set of discrete geographic locations
+Uses the migration costs computed by \code{treeseq_discrete_mpr} to identify the 
+optimal geographic state for each ancestral node - the state that minimizes the 
+total migration cost needed to explain sample locations. When multiple states 
+achieve the minimum cost, one is chosen randomly.
 }
 \details{
-Assigns genetic ancestors in a tree sequence to the geographic
-location that minimizes the overall average migration cost.
+For each node, this function examines the migration costs computed by 
+\code{treeseq_discrete_mpr} to identify the geographic state(s) that achieve
+the minimum total cost. When multiple states achieve the minimum cost (equally 
+parsimonious reconstructions), one state is selected randomly using uniform 
+probability.
+
+The function maintains consistent indexing with the input data by default
+(index1=TRUE), matching the 1-based state indexing used in sample_locations
+when calling \code{treeseq_discrete_mpr}. Set index1=FALSE to use 0-based
+indexing, which may be more convenient when working with tree sequence node IDs.
+}
+\examples{
+# Load example tree sequence
+ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+
+# Define sample locations (3 samples in 2 states)
+samples <- data.frame(
+  node_id = 0:2,
+  state_id = c(1,2,1)
+)
+
+# Create cost matrix for 2 states
+costs <- matrix(c(
+  0, 1,
+  1, 0
+), 2, 2)
+
+# Compute migration costs
+mpr_costs <- treeseq_discrete_mpr(ts, samples, costs)
+
+# Find optimal states (1-based indexing)
+states <- treeseq_discrete_mpr_minimize(mpr_costs)
+
+# Find optimal states (0-based indexing)
+states0 <- treeseq_discrete_mpr_minimize(mpr_costs, index1=FALSE)
+
+}
+\seealso{
+\code{\link{treeseq_discrete_mpr}} for computing migration costs
+\code{\link{treeseq_discrete_mpr_edge_history}} for detailed migration histories
 }

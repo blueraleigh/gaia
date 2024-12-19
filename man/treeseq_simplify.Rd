@@ -20,14 +20,77 @@ treeseq_simplify(
 )
 }
 \arguments{
-\item{ts}{A \code{treeseq} object.}
+\item{ts}{A \code{treeseq} object}
 
-\item{samples}{A vector of sample id's.}
+\item{samples}{Integer vector of node IDs specifying which samples to retain 
+(0-based indexing)}
+
+\item{node.map}{Logical indicating whether to return a mapping from old to new 
+node IDs (default: FALSE)}
+
+\item{filter.sites}{Logical indicating whether to remove sites not ancestral to 
+retained samples (default: TRUE)}
+
+\item{filter.populations}{Logical indicating whether to remove unused populations 
+(default: TRUE)}
+
+\item{filter.individuals}{Logical indicating whether to remove unused individuals 
+(default: TRUE)}
+
+\item{no.filter.nodes}{Logical indicating whether to retain nodes not ancestral 
+to samples (default: FALSE)}
+
+\item{no.update.sample.flags}{Logical indicating whether to preserve original 
+sample flags (default: FALSE)}
+
+\item{reduce.to.site.topology}{Logical indicating whether to remove edges not 
+supporting variants (default: FALSE)}
+
+\item{keep.unary}{Logical indicating whether to retain nodes with single child 
+(default: FALSE)}
+
+\item{keep.input.roots}{Logical indicating whether to retain original root nodes 
+(default: FALSE)}
+
+\item{keep.unary.in.individuals}{Logical indicating whether to retain unary nodes 
+in individuals (default: FALSE)}
 }
 \value{
-A new tree sequence pruned to only include the samples listed in
-the \code{samples} parameter.
+If node.map=FALSE (default), returns a new simplified \code{treeseq} 
+  object. If node.map=TRUE, returns a \code{treeseq} object with an additional 
+  attribute 'node.map' containing integer vector mapping original to new node IDs.
 }
 \description{
-Simplify a tree sequence
+Creates a simplified tree sequence containing only the genealogical relationships 
+relevant to a specified subset of samples. The simplified sequence maintains all 
+necessary ancestry while removing extraneous nodes and edges.
+}
+\details{
+Simplification reduces a tree sequence to only the genealogical relationships 
+necessary to describe the ancestry of a specified set of samples. This process:
+1. Removes nodes and edges not ancestral to retained samples
+2. Optionally removes sites, populations, and individuals no longer referenced
+3. Merges redundant edges
+4. Updates sample flags
+
+The process preserves all genealogical information relevant to the retained 
+samples while potentially greatly reducing the size of the tree sequence.
+
+Multiple filtering options control what information is retained or removed during 
+simplification.
+}
+\examples{
+# Load example tree sequence
+ts <- treeseq_load(system.file("extdata", "example.trees", package="gaia"))
+
+# Simplify to first two samples
+ts2 <- treeseq_simplify(ts, samples=c(0,1))
+
+# Get mapping between old and new node IDs
+ts3 <- treeseq_simplify(ts, samples=c(0,1), node.map=TRUE)
+node_map <- attr(ts3, "node.map")
+
+}
+\seealso{
+\code{\link{treeseq_drop_edges}} for selective edge removal
 }
