@@ -35,8 +35,9 @@
 #'
 #' @export
 treeseq = setClass(
-    "treeseq"
-    , slots=list(
-          treeseq="externalptr"
-        , tree="externalptr")
+  "treeseq",
+  slots=list(
+    treeseq="externalptr",
+    tree="externalptr"
+  )
 )

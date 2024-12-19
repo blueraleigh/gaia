@@ -1,3 +1,6 @@
+# This file compares the output of gaia to a more basic implementation
+# programmed directly in R.
+
 library(gaia)
 
 stem.cost = function(node, state, parent, time, node_cost, stem_cost, cost) {

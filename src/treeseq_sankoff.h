@@ -13,13 +13,12 @@ typedef struct tsx_tree_t {
     tsk_id_t *parent;
     const double *time;
     const tsk_flags_t *node_flags;
-    int *num_samples;
-    int num_edges;
-    // parsimony data structure
-    void *mpr;
-    void (*calc_stem_cost)(tsk_id_t, tsk_id_t, struct tsx_tree_t *);
-    void (*calc_final_cost)(tsk_id_t, struct tsx_tree_t *);
-    void (*increment_node_cost)(tsk_id_t, tsk_id_t, struct tsx_tree_t *, int);
+    int *num_samples; // Number of samples in the tree
+    int num_edges; // Number of edges in the tree
+    void *mpr;  // Parsimony data structure
+    void (*calc_stem_cost)(tsk_id_t, tsk_id_t, struct tsx_tree_t *); // Stem cost function
+    void (*calc_final_cost)(tsk_id_t, struct tsx_tree_t *); // Final cost function
+    void (*increment_node_cost)(tsk_id_t, tsk_id_t, struct tsx_tree_t *, int); // Node cost function
 } tsx_tree_t;
 
 int
