@@ -2,7 +2,7 @@
 % Please edit documentation in R/treeseq_sankoff.R
 \name{treeseq_discrete_mpr_ancestry}
 \alias{treeseq_discrete_mpr_ancestry}
-\title{Spatiotemporal ancestry coefficients}
+\title{Compute geographic ancestry coefficients through time}
 \usage{
 treeseq_discrete_mpr_ancestry(
   ts,
@@ -15,30 +15,78 @@ treeseq_discrete_mpr_ancestry(
 )
 }
 \arguments{
-\item{ts}{An object of class \code{treeseq}.}
+\item{ts}{A \code{treeseq} object}
 
-\item{obj}{The result of \code{treeseq_discrete_mpr}.}
+\item{obj}{Result object from \code{treeseq_discrete_mpr}}
 
-\item{cost_matrix}{A numeric matrix giving the state-to-state migration
-costs. All costs should be non-negative and any non-zero costs on the 
-diagonal will be ignored.}
+\item{cost_matrix}{Symmetric numeric matrix of migration costs between states}
 
-\item{adjacency_matrix}{A binary matrix specifying geographic connections.
-Geographic states \code{i} and \code{j} are connected if the corresponding
-entry in \code{adjacency_matrix} is 1.}
+\item{adjacency_matrix}{Binary matrix specifying allowed transitions between states}
 
-\item{times}{A set of times ordered from present to past at which to compute
-ancestry coefficients.}
+\item{times}{Numeric vector of time points at which to calculate ancestry,
+must be ordered from present (0) to past}
 
-\item{state_sets}{An integer vector with one entry for each geographic
-state specifying the set to which that state belongs. Sets must be numbered
-beginning from 1.}
+\item{state_sets}{Integer vector grouping states into regions. Length must match
+number of states, values indicate region membership (1-based)}
 
-\item{sample_sets}{An integer vector with one entry for each sample
-specifying the set to which that sample belongs. Sets must be numbered
-beginning from 1. A value of 0 may be used to indicate that the sample
-belongs to none of the sets and hence is to be excluded from the calculation.}
+\item{sample_sets}{Integer vector grouping samples into subsets. Length must match
+number of samples, values indicate subset membership (1-based). Use 0 to exclude
+samples.}
+}
+\value{
+A 3-dimensional array with dimensions:
+  [region, sample_subset, time_point]
+Values represent the proportion of genetic material that sample_subset inherits
+from ancestors in region at each time_point.
 }
 \description{
-Spatiotemporal ancestry coefficients
+For each combination of sample subset and geographic region, calculates the 
+proportion of genetic material inherited from ancestors in that region at 
+different points in time. This allows tracking how the geographic distribution 
+of ancestry changes as we move backwards in time.
+}
+\details{
+This function traces genetic material backwards in time to determine its
+geographic location at different time points. For each sample subset, time point,
+and geographic region, it calculates the fraction of the genome that was located
+in that region at that time.
+
+States can be grouped into regions using state_sets. For example, multiple
+states might represent different locations within the same continent. Similarly,
+samples can be grouped into subsets using sample_sets, allowing calculation
+of ancestry coefficients for different populations or sampling locations.
+
+The function uses the migration paths sampled by edge_history to determine
+locations of genetic material through time. Different random samplings of
+migration paths may give slightly different results when multiple equally
+parsimonious paths exist.
+}
+\examples{
+# Load tree sequence
+ts = treeseq_load(system.file("extdata", "test.trees", package="gaia"))
+
+# Set up states, costs, and adjacency
+state = c(2L,1L,1L)
+samples = cbind(node_id=0:2, state_id=state)
+costs = matrix(c(0,1,1,0), 2, 2)
+adjacency = matrix(1, 2, 2)
+diag(adjacency) = 0
+
+# Compute base MPR
+mpr_costs = treeseq_discrete_mpr(ts, samples, costs)
+
+# Define timepoints to examine ancestry
+# Must cover node times from 0 to 1.0
+times = seq(0, 1.0, by=0.2)
+
+# Compute ancestry coefficients
+ancestry = treeseq_discrete_mpr_ancestry(
+  ts, mpr_costs, costs, adjacency, times, 
+  state_sets=1:2,     # Keep states separate
+  sample_sets=1:3     # Keep samples separate
+)
+}
+\seealso{
+\code{\link{treeseq_discrete_mpr_edge_history}} for the underlying migration paths
+\code{\link{treeseq_discrete_mpr_ancestry_flux}} for tracking migration between regions
 }

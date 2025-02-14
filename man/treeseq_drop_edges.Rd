@@ -2,22 +2,56 @@
 % Please edit documentation in R/treeseq_edges.R
 \name{treeseq_drop_edges}
 \alias{treeseq_drop_edges}
-\title{Drop edges from the tree sequence}
+\title{Remove edges from a tree sequence}
 \usage{
 treeseq_drop_edges(ts, parent, child)
 }
 \arguments{
-\item{ts}{A \code{treeseq} object.}
+\item{ts}{A \code{treeseq} object}
 
-\item{parent}{An integer vector of node id's. Edges that emanate from nodes
-whose id is in \code{parent} will be dropped.}
+\item{parent}{Integer vector of node IDs. All edges emanating from these parent 
+nodes will be removed. Uses 0-based indexing.}
 
-\item{child}{An integer vector of node id's. Edges that enter nodes whose 
-id is in \code{child} will be dropped.}
+\item{child}{Integer vector of node IDs. All edges entering these child nodes 
+will be removed. Uses 0-based indexing.}
 }
 \value{
-A new \code{treeseq} object with the specified edges removed.
+A new \code{treeseq} object with the specified edges removed and the 
+  topology simplified
 }
 \description{
-Drop edges from the tree sequence
+Creates a new tree sequence with specified edges removed. Edges can be removed 
+based on their parent nodes, child nodes, or both. The resulting tree sequence 
+is automatically simplified to maintain a valid topology.
+}
+\details{
+This function allows selective pruning of relationships from the tree sequence. 
+Edges can be removed based on their parent nodes (all edges coming from specific 
+ancestors), their child nodes (all edges going to specific descendants), or both.
+
+After removing edges, the tree sequence is automatically simplified to:
+1. Remove any nodes that become disconnected
+2. Remove redundant nodes (those with only one child)
+3. Merge adjacent edges with identical parent-child relationships
+4. Update sample node flags
+
+At least one of parent or child must be specified. If both are specified, edges 
+matching either criterion are removed.
+}
+\examples{
+# Load tree sequence 
+ts = treeseq_load(system.file("extdata", "test.trees", package="gaia"))
+
+# Remove all edges from node 4 (internal node present in all trees)
+ts2 = treeseq_drop_edges(ts, parent=4)
+
+# Remove edges to sample nodes 0 and 1
+ts3 = treeseq_drop_edges(ts, child=c(0,1))
+
+# Remove both sets of edges
+ts4 = treeseq_drop_edges(ts, parent=4, child=c(0,1))
+}
+\seealso{
+\code{\link{treeseq_edges}} for viewing the edge table
+\code{\link{treeseq_simplify}} for general tree sequence simplification
 }

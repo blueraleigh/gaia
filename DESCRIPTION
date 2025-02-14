@@ -3,7 +3,14 @@ Type: Package
 Title: gaia: geographic ancestor inference algorithm
 Version: 1.0
 Date: 2023-10-10
-Author: Michael C. Grundler
+Authors@R: c(person(given = c("Michael", "C."),
+                  family = "Grundler",
+                  role = c("aut", "cre"),
+                  email = "mcgrundler@gmail.com")
+             person(given="Chris", 
+                    family="Talbot",
+                    role="ctb")
+            )
 Maintainer: Michael C. Grundler <mcgrundler@gmail.com>
 Description: The gaia package performs generalized parsimony analysis on the
   local gene genealogies embedded within an ancestral recombination graph
@@ -11,4 +18,5 @@ Description: The gaia package performs generalized parsimony analysis on the
 NeedsCompilation: yes
 Imports: methods, Matrix
 License: MIT + file LICENSE
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
+Encoding: UTF-8

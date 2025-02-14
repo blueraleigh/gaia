@@ -7,11 +7,42 @@
 treeseq_load(filename)
 }
 \arguments{
-\item{filename}{The name of the file with the tree sequence.}
+\item{filename}{Character string giving the path to a .trees file}
 }
 \value{
-An object of class \code{treeseq}.
+A \code{treeseq} object containing:
+  \describe{
+    \item{treeseq}{External pointer to the full tree sequence}
+    \item{tree}{External pointer to the current local tree, initially the first tree}
+  }
 }
 \description{
-Load a tree sequence from a file
+Creates a \code{treeseq} object by loading a tree sequence from a .trees file. 
+The tree sequence must be in the tskit format. This function initializes both
+the full tree sequence and its first local tree.
+}
+\details{
+The .trees file must be in the tskit format. Tree sequences can be created and 
+exported to this format using tools like msprime, SLiM, or tskit's Python API.
+
+The returned object provides access to both the complete tree sequence and its 
+constituent local trees. The tree slot initially points to the first local tree, 
+but can be updated to other trees using \code{treeseq_sample}.
+}
+\examples{
+# Load tree sequence
+ts = treeseq_load(system.file("extdata", "test.trees", package="gaia"))
+
+# Access node table showing sample nodes 0-2 and internal nodes 3-6
+nodes = treeseq_nodes(ts)
+
+# Access edge table showing topology changes across three intervals
+edges = treeseq_edges(ts)
+
+# View first local tree (interval [0,20))
+tree = treeseq_to_phylo(ts)
+}
+\seealso{
+\code{\link{treeseq_write}} for saving tree sequences
+\code{\link{treeseq_sample}} for accessing different local trees
 }

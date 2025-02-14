@@ -2,13 +2,37 @@
 % Please edit documentation in R/treeseq_nodes.R
 \name{treeseq_num_samples}
 \alias{treeseq_num_samples}
-\title{Return the number of samples in a tree sequence}
+\title{Count the number of samples in a tree sequence}
 \usage{
 treeseq_num_samples(ts)
 }
 \arguments{
-\item{ts}{A \code{treeseq} object.}
+\item{ts}{A \code{treeseq} object}
+}
+\value{
+Integer giving the number of samples
 }
 \description{
-Return the number of samples in a tree sequence
+Returns the number of sample nodes in a tree sequence. Samples represent the 
+observed data (e.g., sequenced genomes) from which the genealogies were inferred.
+}
+\details{
+Samples are nodes that represent directly observed data, as opposed to inferred 
+ancestors. They are marked with the is_sample flag in the nodes table.
+
+The count includes all nodes flagged as samples, regardless of:
+- Their time (though samples typically exist at time 0)
+- Their population assignments
+- Which individual they belong to
+}
+\examples{
+# Load tree sequence
+ts = treeseq_load(system.file("extdata", "test.trees", package="gaia"))
+
+# Count samples (should be 3: nodes 0-2)
+n_samples = treeseq_num_samples(ts)
+}
+\seealso{
+\code{\link{treeseq_nodes}} for accessing the full node table
+\code{\link{treeseq_num_nodes}} for counting all nodes
 }

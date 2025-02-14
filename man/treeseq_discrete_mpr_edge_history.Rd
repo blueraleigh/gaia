@@ -2,7 +2,7 @@
 % Please edit documentation in R/treeseq_sankoff.R
 \name{treeseq_discrete_mpr_edge_history}
 \alias{treeseq_discrete_mpr_edge_history}
-\title{Sample a migration history for each edge in a tree sequence}
+\title{Sample migration paths for each edge in a tree sequence}
 \usage{
 treeseq_discrete_mpr_edge_history(
   ts,
@@ -13,31 +13,78 @@ treeseq_discrete_mpr_edge_history(
 )
 }
 \arguments{
-\item{ts}{An object of class \code{treeseq}.}
+\item{ts}{A \code{treeseq} object}
 
-\item{obj}{The result of \code{treeseq_discrete_mpr}.}
+\item{obj}{Result object from \code{treeseq_discrete_mpr}}
 
-\item{cost_matrix}{A numeric matrix giving the state-to-state migration
-costs. All costs should be non-negative and any non-zero costs on the 
-diagonal will be ignored.}
+\item{cost_matrix}{A symmetric numeric matrix where entry [i,j] gives the migration
+cost between states i and j. Must have non-negative values. Diagonal elements
+are ignored.}
 
-\item{adjacency_matrix}{A binary matrix specifying geographic connections.
-Geographic states \code{i} and \code{j} are connected if the corresponding
-entry in \code{adjacency_matrix} is 1.}
+\item{adjacency_matrix}{A binary matrix specifying allowed transitions between states.
+Entry [i,j] should be 1 if direct transitions are allowed between states i and j,
+0 otherwise. Must be symmetric.}
 
-\item{index1}{A logical indicating whether or not the returned state
-assignments should be indexed from 1 (TRUE) or 0 (FALSE).}
+\item{index1}{Logical indicating whether state IDs should use 1-based indexing
+(TRUE, default) or 0-based indexing (FALSE)}
+}
+\value{
+A data frame where each row represents a state in a migration path:
+  \describe{
+    \item{edge_id}{ID of the edge this state belongs to}
+    \item{state_id}{Geographic state at this point in the path}
+    \item{time}{Time at which this state occurred}
+  }
+Also contains attributes:
+  \describe{
+    \item{node.state}{Vector of state assignments for all nodes}
+    \item{path.offset}{Index vector for finding states belonging to each edge}
+  }
 }
 \description{
-Sample a migration history for each edge in a tree sequence
+For each edge in a tree sequence, samples a minimum-cost migration path between 
+the geographic states of parent and child nodes. The path represents the sequence 
+of state transitions that could have occurred along the branch, consistent with 
+the parsimony reconstruction.
 }
 \details{
-Samples a minimum cost migration history for each edge in a tree
-sequence and returns the history as a data.frame. Each history is a sequence 
-of visited geographic states ordered from most recent (present) to least 
-recent (past). The first element in the history is the state at the end
-of the edge and the last element in the history is the state at the
-beginning of the edge. Intermediate elements are the states visited along
-the way. If there are no intermediate elements, the edge remained in the
-same state for its entire duration.
+For each edge in the tree sequence, this function samples one possible migration
+path between the states assigned to the parent and child nodes by the parsimony
+reconstruction. The path represents a sequence of state transitions that could
+have occurred along that branch while achieving the minimum total migration cost.
+
+When multiple minimum-cost paths exist between two states, one is chosen randomly.
+The path always includes at least two points: the states at the beginning and end
+of the edge. Additional points are added when state transitions occur along the edge.
+
+The adjacency matrix controls which direct transitions between states are allowed.
+This can be used to enforce geographic constraints (e.g., requiring migration
+through intermediate states).
+}
+\examples{
+# Load tree sequence
+ts = treeseq_load(system.file("extdata", "test.trees", package="gaia"))
+
+# Define sample states
+state = c(2L,1L,1L)
+samples = cbind(node_id=0:2, state_id=state)
+
+# Create cost matrix for 2 states
+costs = matrix(c(0, 1, 1, 0), 2, 2)
+
+# Create adjacency matrix allowing transitions between states
+adjacency = matrix(1, 2, 2)
+# No self-transitions allowed in adjacency
+diag(adjacency) = 0
+
+# Compute migration costs
+mpr_costs = treeseq_discrete_mpr(ts, samples, costs)
+
+# Get migration histories for each edge
+# This will show state changes along branches in all three trees
+history = treeseq_discrete_mpr_edge_history(ts, mpr_costs, costs, adjacency)
+}
+\seealso{
+\code{\link{treeseq_discrete_mpr}} for computing the parsimony reconstruction
+\code{\link{treeseq_discrete_mpr_minimize}} for assigning states to nodes
 }

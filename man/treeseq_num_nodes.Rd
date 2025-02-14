@@ -2,13 +2,39 @@
 % Please edit documentation in R/treeseq_nodes.R
 \name{treeseq_num_nodes}
 \alias{treeseq_num_nodes}
-\title{Return the number of nodes in a tree sequence}
+\title{Count the number of nodes in a tree sequence}
 \usage{
 treeseq_num_nodes(ts)
 }
 \arguments{
-\item{ts}{A \code{treeseq} object.}
+\item{ts}{A \code{treeseq} object}
+}
+\value{
+Integer giving the number of nodes
 }
 \description{
-Return the number of nodes in a tree sequence
+Returns the total number of nodes in a tree sequence. Includes all nodes 
+(samples and non-samples) that appear in any local tree.
+}
+\details{
+The number of nodes corresponds to the number of rows in the node table. Each 
+node represents a haploid genome that existed at some point in time and appears 
+in at least one local tree.
+
+This count includes:
+- Sample nodes (observed data)
+- Non-sample nodes (inferred ancestors)
+- Root nodes
+- Internal nodes
+}
+\examples{
+# Load tree sequence
+ts = treeseq_load(system.file("extdata", "test.trees", package="gaia"))
+
+# Count nodes (should be 7: samples 0-2 and internal nodes 3-6)
+n_nodes = treeseq_num_nodes(ts)
+}
+\seealso{
+\code{\link{treeseq_nodes}} for accessing the full node table
+\code{\link{treeseq_num_samples}} for counting just sample nodes
 }
