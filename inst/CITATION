@@ -1,0 +1,13 @@
+bibentry(bibtype="Article",
+    author = c(person(given=c("Michael", "C."), family="Grundler"),
+      person(given=c("Jonathan"), family="Terhorst"),
+      person(given=c("Gideon", "S."), family="Bradburd")),
+    title = "A geographic history of human genetic ancestry",
+    journal = "Science",
+    volume = "387",
+    number = "6741",
+    pages = "1391-1397",
+    year = "2025",
+    doi = "10.1126/science.adp4642",
+    header = "To cite gaia in publications use:"
+)
