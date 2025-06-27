@@ -33,8 +33,6 @@ prev_state(graph_t *g, int current, int source)
 
     for (i = 0; i < num_neighbors; ++i)
     {
-        if (neighbors[i] == source)
-            return source;
         // shortest graph distance from source state to
         // current state that goes through this neighbor
         d = distances[source + neighbors[i]*num_states] + weights[i];
