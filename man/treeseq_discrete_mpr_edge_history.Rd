@@ -21,8 +21,8 @@ treeseq_discrete_mpr_edge_history(
 cost between states i and j. Must have non-negative values. Diagonal elements
 are ignored.}
 
-\item{adjacency_matrix}{A binary matrix specifying allowed transitions between states.
-Entry [i,j] should be 1 if direct transitions are allowed between states i and j,
+\item{adjacency_matrix}{A matrix specifying allowed transitions between states.
+Entry [i,j] should be >0 if direct transitions are allowed between states i and j,
 0 otherwise. Must be symmetric.}
 
 \item{index1}{Logical indicating whether state IDs should use 1-based indexing

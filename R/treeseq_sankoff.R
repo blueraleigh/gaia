@@ -175,8 +175,8 @@ treeseq_discrete_mpr_minimize = function(obj, index1=TRUE)
 #' @param cost_matrix A symmetric numeric matrix where entry [i,j] gives the migration
 #'   cost between states i and j. Must have non-negative values. Diagonal elements
 #'   are ignored.
-#' @param adjacency_matrix A binary matrix specifying allowed transitions between states.
-#'   Entry [i,j] should be 1 if direct transitions are allowed between states i and j,
+#' @param adjacency_matrix A matrix specifying allowed transitions between states.
+#'   Entry [i,j] should be >0 if direct transitions are allowed between states i and j,
 #'   0 otherwise. Must be symmetric.
 #' @param index1 Logical indicating whether state IDs should use 1-based indexing
 #'   (TRUE, default) or 0-based indexing (FALSE)
@@ -243,11 +243,13 @@ treeseq_discrete_mpr_edge_history = function(ts, obj, cost_matrix,
     stopifnot(isSymmetric(adjacency_matrix))
     stopifnot(nrow(cost_matrix) == ncol(cost_matrix))
     stopifnot(all(cost_matrix >= 0L))
+    stopifnot(all(is.finite(cost_matrix)))
     stopifnot(is.logical(index1))
     diag(cost_matrix) = 0
     diag(adjacency_matrix) = 0
     stopifnot(all(rowSums(adjacency_matrix) > 0))
     stopifnot(all(colSums(adjacency_matrix) > 0))
+    stopifnot(all(is.finite(adjacency_matrix)))
     storage.mode(cost_matrix) = "double"
     if (!inherits(adjacency_matrix, "dgCMatrix"))
     {
@@ -290,7 +292,7 @@ treeseq_discrete_mpr_edge_history = function(ts, obj, cost_matrix,
 #' @param ts A \code{treeseq} object
 #' @param obj Result object from \code{treeseq_discrete_mpr}
 #' @param cost_matrix Symmetric numeric matrix of migration costs between states
-#' @param adjacency_matrix Binary matrix specifying allowed transitions between states
+#' @param adjacency_matrix Matrix specifying allowed transitions between states
 #' @param times Numeric vector of time points at which to calculate ancestry,
 #'   must be ordered from present (0) to past
 #' @param state_sets Integer vector grouping states into regions. Length must match
@@ -397,7 +399,7 @@ treeseq_discrete_mpr_ancestry = function(ts, obj, cost_matrix,
 #' @param ts A \code{treeseq} object
 #' @param obj Result object from \code{treeseq_discrete_mpr}
 #' @param cost_matrix Symmetric numeric matrix of migration costs between states
-#' @param adjacency_matrix Binary matrix specifying allowed transitions between states
+#' @param adjacency_matrix Matrix specifying allowed transitions between states
 #' @param times Numeric vector of time points defining intervals for flux calculation,
 #'   must be ordered from present (0) to past
 #' @param state_sets Integer vector grouping states into regions. Length must match

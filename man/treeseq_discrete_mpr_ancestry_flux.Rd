@@ -21,7 +21,7 @@ treeseq_discrete_mpr_ancestry_flux(
 
 \item{cost_matrix}{Symmetric numeric matrix of migration costs between states}
 
-\item{adjacency_matrix}{Binary matrix specifying allowed transitions between states}
+\item{adjacency_matrix}{Matrix specifying allowed transitions between states}
 
 \item{times}{Numeric vector of time points defining intervals for flux calculation,
 must be ordered from present (0) to past}
